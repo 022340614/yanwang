@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化平台 - 第二章实践</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .chart-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .chart-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .chart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .chart-btn.active {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .color-scheme-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .color-btn {
+            height: 40px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            box-shadow: 0 0 0 3px white, 0 0 0 6px #667eea;
+        }
+
+        .chart-container {
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .main-content {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 数据可视化平台</h1>
+            <p>基于第二章数据可视化知识的专业分析平台</p>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-label">数据集数量</div>
+                <div class="stat-value" id="dataset-count">6</div>
+                <div class="stat-label">涵盖多个领域</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">图表类型</div>
+                <div class="stat-value" id="chart-types">6</div>
+                <div class="stat-label">完整可视化方案</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">数据点总数</div>
+                <div class="stat-value" id="data-points">127</div>
+                <div class="stat-label">实时分析</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="control-group">
+                    <h3>📈 图表类型</h3>
+                    <div class="chart-type-grid">
+                        <button class="chart-btn active" data-chart="line">折线图</button>
+                        <button class="chart-btn" data-chart="bar">柱形图</button>
+                        <button class="chart-btn" data-chart="pie">饼图</button>
+                        <button class="chart-btn" data-chart="scatter">散点图</button>
+                        <button class="chart-btn" data-chart="area">面积图</button>
+                        <button class="chart-btn" data-chart="radar">雷达图</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>📊 数据集选择</h3>
+                    <select id="dataset-select">
+                        <option value="temperature">温度数据</option>
+                        <option value="gmv">阿里巴巴GMV数据</option>
+                        <option value="online_shopping">网购替代率</option>
+                        <option value="logistics">物流费用统计</option>
+                        <option value="alipay">支付宝月账单</option>
+                        <option value="car_braking">汽车制动距离</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎨 颜色方案</h3>
+                    <div class="color-scheme-grid">
+                        <button class="color-btn active" style="background: linear-gradient(45deg, #440154, #31688e, #35b779, #fde725)" data-scheme="viridis">Viridis</button>
+                        <button class="color-btn" style="background: linear-gradient(45deg, #0d0887, #7e03a8, #cc4678, #f0f921)" data-scheme="plasma">Plasma</button>
+                        <button class="color-btn" style="background: linear-gradient(45deg, #000004, #721f81, #f1605d, #fcfdbf)" data-scheme="inferno">Inferno</button>
+                        <button class="color-btn" style="background: linear-gradient(45deg, #1f77b4, #ff7f0e, #2ca02c, #d62728)" data-scheme="category10">Category10</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>⚙️ 图表设置</h3>
+                    <label>图表标题:</label>
+                    <input type="text" id="chart-title" value="数据可视化图表">
+                    
+                    <label>X轴标签:</label>
+                    <input type="text" id="x-axis-label" value="X轴">
+                    
+                    <label>Y轴标签:</label>
+                    <input type="text" id="y-axis-label" value="Y轴">
+                </div>
+
+                <div class="control-group">
+                    <h3>📋 数据操作</h3>
+                    <button class="chart-btn" id="export-data" style="background: #28a745;">导出数据</button>
+                    <button class="chart-btn" id="reset-view" style="background: #dc3545;">重置视图</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="chart-container">
+                    <div id="chart-area"></div>
+                </div>
+                
+                <div class="data-table-container">
+                    <h3>📋 数据表格</h3>
+                    <div id="table-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 数据可视化平台核心逻辑
+        class DataVisualizationPlatform {
+            constructor() {
+                this.datasets = this.initializeDatasets();
+                this.currentChartType = 'line';
+                this.currentDataset = 'temperature';
+                this.currentColorScheme = 'viridis';
+                this.colorSchemes = this.initializeColorSchemes();
+                this.init();
+            }
+
+            // 初始化数据集
+            initializeDatasets() {
+                return {
+                    temperature: {
+                        name: "温度数据",
+                        description: "未来15天最高气温和最低气温数据",
+                        type: "time-series",
+                        data: {
+                            days: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                            maxTemp: [32, 33, 34, 34, 33, 31, 30, 29, 30, 29, 26, 23, 21, 25, 31],
+                            minTemp: [19, 19, 20, 22, 22, 21, 22, 16, 18, 18, 17, 14, 15, 16, 16]
+                        },
+                        stats: {
+                            totalPoints: 30,
+                            maxValue: 34,
+                            minValue: 14,
+                            average: 24.5
+                        }
+                    },
+                    gmv: {
+                        name: "阿里巴巴GMV数据",
+                        description: "2013-2019财年淘宝和天猫平台GMV",
+                        type: "financial",
+                        data: [
+                            { year: "FY2013", gmv: 10770, growth: 0 },
+                            { year: "FY2014", gmv: 16780, growth: 55.8 },
+                            { year: "FY2015", gmv: 24440, growth: 45.7 },
+                            { year: "FY2016", gmv: 30920, growth: 26.5 },
+                            { year: "FY2017", gmv: 37670, growth: 21.8 },
+                            { year: "FY2018", gmv: 48200, growth: 28.0 },
+                            { year: "FY2019", gmv: 57270, growth: 18.8 }
+                        ],
+                        stats: {
+                            totalPoints: 7,
+                            maxValue: 57270,
+                            minValue: 10770,
+                            average: 32293
+                        }
+                    },
+                    online_shopping: {
+                        name: "网购替代率",
+                        description: "各商品种类的网购替代率",
+                        type: "percentage",
+                        data: [
+                            { category: "家政、家教、保姆等生活服务", rate: 0.959, rank: 1 },
+                            { category: "飞机票、火车票", rate: 0.951, rank: 2 },
+                            { category: "家具", rate: 0.935, rank: 3 },
+                            { category: "手机、手机配件", rate: 0.924, rank: 4 },
+                            { category: "计算机及其配套产品", rate: 0.893, rank: 5 },
+                            { category: "汽车用品", rate: 0.892, rank: 6 },
+                            { category: "通信充值、游戏充值", rate: 0.865, rank: 7 },
+                            { category: "个人护理用品", rate: 0.863, rank: 8 }
+                        ],
+                        stats: {
+                            totalPoints: 8,
+                            maxValue: 0.959,
+                            minValue: 0.863,
+                            average: 0.897
+                        }
+                    },
+                    logistics: {
+                        name: "物流费用统计",
+                        description: "物流公司月度物流费用",
+                        type: "comparison",
+                        data: {
+                            months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            companyA: [198, 215, 245, 222, 200, 236, 201, 253, 236, 200, 266, 290],
+                            companyB: [203, 236, 200, 236, 269, 216, 298, 333, 301, 349, 360, 368],
+                            companyC: [185, 205, 226, 199, 238, 200, 250, 209, 246, 219, 253, 288]
+                        },
+                        stats: {
+                            totalPoints: 36,
+                            maxValue: 368,
+                            minValue: 185,
+                            average: 248.6
+                        }
+                    },
+                    alipay: {
+                        name: "支付宝月账单",
+                        description: "支付宝月度消费分类统计",
+                        type: "composition",
+                        data: [
+                            { category: "购物", amount: 800, percentage: 26.7, color: "#FF6B6B" },
+                            { category: "人情往来", amount: 100, percentage: 3.3, color: "#4ECDC4" },
+                            { category: "餐饮美食", amount: 1000, percentage: 33.3, color: "#45B7D1" },
+                            { category: "通信物流", amount: 200, percentage: 6.7, color: "#96CEB4" },
+                            { category: "生活日用", amount: 300, percentage: 10.0, color: "#FFEAA7" },
+                            { category: "交通出行", amount: 200, percentage: 6.7, color: "#DDA0DD" },
+                            { category: "休闲娱乐", amount: 200, percentage: 6.7, color: "#98D8C8" },
+                            { category: "其他", amount: 200, percentage: 6.7, color: "#F7DC6F" }
+                        ],
+                        stats: {
+                            totalPoints: 8,
+                            maxValue: 1000,
+                            minValue: 100,
+                            average: 375
+                        }
+                    },
+                    car_braking: {
+                        name: "汽车制动距离",
+                        description: "汽车速度与制动距离关系",
+                        type: "correlation",
+                        data: [
+                            { speed: 10, distance: 0.5, risk: "低" },
+                            { speed: 20, distance: 2.0, risk: "低" },
+                            { speed: 30, distance: 4.4, risk: "中" },
+                            { speed: 40, distance: 7.9, risk: "中" },
+                            { speed: 50, distance: 12.3, risk: "高" },
+                            { speed: 60, distance: 17.7, risk: "高" },
+                            { speed: 70, distance: 24.1, risk: "很高" },
+                            { speed: 80, distance: 31.5, risk: "很高" },
+                            { speed: 90, distance: 39.9, risk: "极高" },
+                            { speed: 100, distance: 49.2, risk: "极高" }
+                        ],
+                        stats: {
+                            totalPoints: 10,
+                            maxValue: 49.2,
+                            minValue: 0.5,
+                            average: 18.9
+                        }
+                    }
+                };
+            }
+
+            // 初始化颜色方案
+            initializeColorSchemes() {
+                return {
+                    viridis: ['#440154', '#31688e', '#35b779', '#fde725'],
+                    plasma: ['#0d0887', '#7e03a8', '#cc4678', '#f0f921'],
+                    inferno: ['#000004', '#721f81', '#f1605d', '#fcfdbf'],
+                    category10: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+                };
+            }
+
+            // 初始化平台
+            init() {
+                this.setupEventListeners();
+                this.renderDashboard();
+                this.updateStatsPanel();
+                this.renderChart();
+                this.updateDataTable();
+            }
+
+            // 设置事件监听器
+            setupEventListeners() {
+                console.log('开始设置事件监听器');
+                
+                // 图表类型按钮
+                const chartButtons = document.querySelectorAll('.chart-btn[data-chart]');
+                console.log('找到图表按钮数量:', chartButtons.length);
+                
+                chartButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        console.log('图表按钮被点击:', e.target.dataset.chart);
+                        document.querySelectorAll('.chart-btn[data-chart]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentChartType = e.target.dataset.chart;
+                        this.renderChart();
+                    });
+                });
+
+                // 数据集选择
+                const datasetSelect = document.getElementById('dataset-select');
+                if (datasetSelect) {
+                    datasetSelect.addEventListener('change', (e) => {
+                        console.log('数据集选择改变:', e.target.value);
+                        this.currentDataset = e.target.value;
+                        this.updateStatsPanel();
+                        this.renderChart();
+                        this.updateDataTable();
+                    });
+                } else {
+                    console.error('数据集选择器未找到');
+                }
+
+                // 颜色方案
+                const colorButtons = document.querySelectorAll('.color-btn');
+                console.log('找到颜色按钮数量:', colorButtons.length);
+                
+                colorButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        console.log('颜色按钮被点击:', e.target.dataset.scheme);
+                        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentColorScheme = e.target.dataset.scheme;
+                        this.renderChart();
+                    });
+                });
+
+                // 导出数据
+                const exportButton = document.getElementById('export-data');
+                if (exportButton) {
+                    exportButton.addEventListener('click', () => {
+                        console.log('导出数据按钮被点击');
+                        this.exportData();
+                    });
+                }
+
+                // 重置视图
+                const resetButton = document.getElementById('reset-view');
+                if (resetButton) {
+                    resetButton.addEventListener('click', () => {
+                        console.log('重置视图按钮被点击');
+                        this.resetView();
+                    });
+                }
+                
+                console.log('事件监听器设置完成');
+            }
+
+            // 渲染仪表板
+            renderDashboard() {
+                console.log('仪表板渲染完成');
+            }
+
+            // 更新统计面板
+            updateStatsPanel() {
+                const dataset = this.datasets[this.currentDataset];
+                const stats = dataset.stats;
+
+                document.getElementById('dataset-count').textContent = Object.keys(this.datasets).length;
+                document.getElementById('chart-types').textContent = 6;
+                document.getElementById('data-points').textContent = stats.totalPoints;
+            }
+
+            // 渲染图表
+            renderChart() {
+                console.log('开始渲染图表，类型:', this.currentChartType, '数据集:', this.currentDataset);
+                const container = document.getElementById('chart-area');
+                if (!container) {
+                    console.error('图表容器未找到');
+                    return;
+                }
+                container.innerHTML = '';
+
+                const dataset = this.datasets[this.currentDataset];
+                const colors = this.colorSchemes[this.currentColorScheme];
+
+                document.getElementById('chart-title').value = dataset.name;
+
+                console.log('开始渲染具体图表类型:', this.currentChartType);
+                switch (this.currentChartType) {
+                    case 'line':
+                        console.log('渲染折线图');
+                        this.renderLineChart(container, dataset, colors);
+                        break;
+                    case 'bar':
+                        console.log('渲染柱形图');
+                        this.renderBarChart(container, dataset, colors);
+                        break;
+                    case 'pie':
+                        console.log('渲染饼图');
+                        this.renderPieChart(container, dataset, colors);
+                        break;
+                    case 'scatter':
+                        console.log('渲染散点图');
+                        this.renderScatterChart(container, dataset, colors);
+                        break;
+                    case 'area':
+                        console.log('渲染面积图');
+                        this.renderAreaChart(container, dataset, colors);
+                        break;
+                    case 'radar':
+                        console.log('渲染雷达图');
+                        this.renderRadarChart(container, dataset, colors);
+                        break;
+                    default:
+                        console.error('未知的图表类型:', this.currentChartType);
+                }
+                console.log('图表渲染完成');
+            }
+
+            // 渲染折线图
+            renderLineChart(container, dataset, colors) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                // 添加标题
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '18px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#333')
+                    .text(dataset.name);
+
+                if (dataset.type === 'time-series') {
+                    this.renderTemperatureLineChart(svg, dataset, colors, width, height, margin);
+                } else if (dataset.type === 'correlation') {
+                    this.renderBrakingLineChart(svg, dataset, colors, width, height, margin);
+                } else {
+                    // 默认渲染简单的折线图
+                    this.renderSimpleLineChart(svg, dataset, colors, width, height, margin);
+                }
+            }
+
+            // 渲染温度折线图
+            renderTemperatureLineChart(svg, dataset, colors, width, height, margin) {
+                const xScale = d3.scaleLinear()
+                    .domain([4, 18])
+                    .range([margin.left, width - margin.right]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, 40])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale))
+                    .append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 35)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('天数');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale))
+                    .append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -40)
+                    .attr('x', -height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('温度 (°C)');
+
+                // 添加网格线
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale)
+                        .tickSize(-height + margin.top + margin.bottom)
+                        .tickFormat(''));
+
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale)
+                        .tickSize(-width + margin.left + margin.right)
+                        .tickFormat(''));
+
+                // 添加折线
+                const line = d3.line()
+                    .x((d, i) => xScale(dataset.data.days[i]))
+                    .y(d => yScale(d))
+                    .curve(d3.curveMonotoneX);
+
+                svg.append('path')
+                    .datum(dataset.data.maxTemp)
+                    .attr('fill', 'none')
+                    .attr('stroke', colors[0])
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                svg.append('path')
+                    .datum(dataset.data.minTemp)
+                    .attr('fill', 'none')
+                    .attr('stroke', colors[1])
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // 添加数据点
+                dataset.data.days.forEach((day, i) => {
+                    svg.append('circle')
+                        .attr('cx', xScale(day))
+                        .attr('cy', yScale(dataset.data.maxTemp[i]))
+                        .attr('r', 4)
+                        .attr('fill', colors[0])
+                        .on('mouseover', (event) => {
+                            this.showTooltip(event, `第${day}天<br>最高温度: ${dataset.data.maxTemp[i]}°C`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+
+                    svg.append('circle')
+                        .attr('cx', xScale(day))
+                        .attr('cy', yScale(dataset.data.minTemp[i]))
+                        .attr('r', 4)
+                        .attr('fill', colors[1])
+                        .on('mouseover', (event) => {
+                            this.showTooltip(event, `第${day}天<br>最低温度: ${dataset.data.minTemp[i]}°C`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+                });
+
+                // 添加图例
+                const legend = svg.append('g')
+                    .attr('transform', `translate(${width - 120},${margin.top})`);
+
+                legend.append('rect')
+                    .attr('width', 12)
+                    .attr('height', 12)
+                    .attr('fill', colors[0]);
+
+                legend.append('text')
+                    .attr('x', 20)
+                    .attr('y', 10)
+                    .text('最高温度');
+
+                legend.append('rect')
+                    .attr('y', 20)
+                    .attr('width', 12)
+                    .attr('height', 12)
+                    .attr('fill', colors[1]);
+
+                legend.append('text')
+                    .attr('x', 20)
+                    .attr('y', 30)
+                    .text('最低温度');
+            }
+
+            // 渲染柱形图
+            renderBarChart(container, dataset, colors) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                // 添加标题
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '18px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#333')
+                    .text(dataset.name);
+
+                if (dataset.type === 'financial') {
+                    this.renderGMVBarChart(svg, dataset, colors, width, height, margin);
+                } else if (dataset.type === 'percentage') {
+                    this.renderShoppingBarChart(svg, dataset, colors, width, height, margin);
+                } else {
+                    // 默认渲染通用柱形图
+                    this.renderGenericBarChart(svg, dataset, colors, width, height, margin);
+                }
+            }
+
+            // 渲染制动距离折线图
+            renderBrakingLineChart(svg, dataset, colors, width, height, margin) {
+                const xScale = d3.scaleLinear()
+                    .domain([0, 110])
+                    .range([margin.left, width - margin.right]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, 60])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale))
+                    .append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 35)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('速度 (km/h)');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale))
+                    .append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -40)
+                    .attr('x', -height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('制动距离 (m)');
+
+                // 添加折线
+                const line = d3.line()
+                    .x(d => xScale(d.speed))
+                    .y(d => yScale(d.distance))
+                    .curve(d3.curveMonotoneX);
+
+                svg.append('path')
+                    .datum(dataset.data)
+                    .attr('fill', 'none')
+                    .attr('stroke', colors[0])
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // 添加数据点
+                dataset.data.forEach((d, i) => {
+                    svg.append('circle')
+                        .attr('cx', xScale(d.speed))
+                        .attr('cy', yScale(d.distance))
+                        .attr('r', 4)
+                        .attr('fill', colors[0])
+                        .on('mouseover', (event) => {
+                            this.showTooltip(event, `速度: ${d.speed} km/h<br>制动距离: ${d.distance} m<br>风险等级: ${d.risk}`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+                });
+            }
+
+            // 渲染简单折线图
+            renderSimpleLineChart(svg, dataset, colors, width, height, margin) {
+                const xScale = d3.scaleLinear()
+                    .domain([0, dataset.data.length - 1])
+                    .range([margin.left, width - margin.right]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(dataset.data, d => d.rate || d.growth || d.amount || 1)])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale));
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale));
+
+                // 添加折线
+                const line = d3.line()
+                    .x((d, i) => xScale(i))
+                    .y(d => yScale(d.rate || d.growth || d.amount || 0))
+                    .curve(d3.curveMonotoneX);
+
+                svg.append('path')
+                    .datum(dataset.data)
+                    .attr('fill', 'none')
+                    .attr('stroke', colors[0])
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // 添加数据点
+                dataset.data.forEach((d, i) => {
+                    svg.append('circle')
+                        .attr('cx', xScale(i))
+                        .attr('cy', yScale(d.rate || d.growth || d.amount || 0))
+                        .attr('r', 4)
+                        .attr('fill', colors[0])
+                        .on('mouseover', (event) => {
+                            this.showTooltip(event, `${d.category || d.year || '数据点'}: ${d.rate ? (d.rate * 100).toFixed(1) + '%' : d.growth ? d.growth + '%' : d.amount || 0}`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+                });
+            }
+
+            // 渲染网购替代率柱形图
+            renderShoppingBarChart(svg, dataset, colors, width, height, margin) {
+                const xScale = d3.scaleBand()
+                    .domain(dataset.data.map(d => d.category.substring(0, 10) + '...'))
+                    .range([margin.left, width - margin.right])
+                    .padding(0.3);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale))
+                    .selectAll("text")
+                    .attr("transform", "rotate(-45)")
+                    .style("text-anchor", "end");
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale).tickFormat(d3.format(".0%")));
+
+                // 添加柱形
+                svg.selectAll('.bar')
+                    .data(dataset.data)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'bar')
+                    .attr('x', d => xScale(d.category.substring(0, 10) + '...'))
+                    .attr('y', d => yScale(d.rate))
+                    .attr('width', xScale.bandwidth())
+                    .attr('height', d => height - margin.bottom - yScale(d.rate))
+                    .attr('fill', (d, i) => colors[i % colors.length])
+                    .on('mouseover', (event, d) => {
+                        this.showTooltip(event, `${d.category}<br>替代率: ${(d.rate * 100).toFixed(1)}%<br>排名: ${d.rank}`);
+                    })
+                    .on('mouseout', () => this.hideTooltip());
+
+                // 添加数值标签
+                svg.selectAll('.label')
+                    .data(dataset.data)
+                    .enter()
+                    .append('text')
+                    .attr('x', d => xScale(d.category.substring(0, 10) + '...') + xScale.bandwidth() / 2)
+                    .attr('y', d => yScale(d.rate) - 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '10px')
+                    .attr('fill', '#333')
+                    .text(d => (d.rate * 100).toFixed(1) + '%');
+            }
+
+            // 渲染通用柱形图
+            renderGenericBarChart(svg, dataset, colors, width, height, margin) {
+                let data = [];
+                let xDomain = [];
+                let valueKey = '';
+
+                if (dataset.type === 'comparison') {
+                    // 处理比较数据
+                    data = dataset.data.months.map((month, i) => ({
+                        label: `${month}月`,
+                        values: {
+                            companyA: dataset.data.companyA[i],
+                            companyB: dataset.data.companyB[i],
+                            companyC: dataset.data.companyC[i]
+                        }
+                    }));
+                    xDomain = data.map(d => d.label);
+                } else {
+                    // 处理其他类型数据
+                    data = dataset.data;
+                    xDomain = data.map(d => d.category || d.year || d.speed || '数据点');
+                    valueKey = Object.keys(data[0]).find(key => 
+                        key !== 'category' && key !== 'year' && key !== 'speed' && key !== 'risk' && key !== 'rank'
+                    );
+                }
+
+                const xScale = d3.scaleBand()
+                    .domain(xDomain)
+                    .range([margin.left, width - margin.right])
+                    .padding(0.3);
+
+                const maxValue = dataset.type === 'comparison' ? 
+                    Math.max(...dataset.data.companyA, ...dataset.data.companyB, ...dataset.data.companyC) :
+                    d3.max(data, d => d[valueKey] || 0);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, maxValue])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale));
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale));
+
+                if (dataset.type === 'comparison') {
+                    // 分组柱形图
+                    const companies = ['companyA', 'companyB', 'companyC'];
+                    const groupWidth = xScale.bandwidth() / companies.length;
+
+                    companies.forEach((company, companyIndex) => {
+                        svg.selectAll(`.${company}`)
+                            .data(data)
+                            .enter()
+                            .append('rect')
+                            .attr('class', company)
+                            .attr('x', (d, i) => xScale(d.label) + groupWidth * companyIndex)
+                            .attr('y', d => yScale(d.values[company]))
+                            .attr('width', groupWidth)
+                            .attr('height', d => height - margin.bottom - yScale(d.values[company]))
+                            .attr('fill', colors[companyIndex])
+                            .on('mouseover', (event, d) => {
+                                this.showTooltip(event, `${d.label}<br>${company}: ${d.values[company]}`);
+                            })
+                            .on('mouseout', () => this.hideTooltip());
+                    });
+                } else {
+                    // 普通柱形图
+                    svg.selectAll('.bar')
+                        .data(data)
+                        .enter()
+                        .append('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => xScale(d.category || d.year || d.speed || '数据点'))
+                        .attr('y', d => yScale(d[valueKey] || 0))
+                        .attr('width', xScale.bandwidth())
+                        .attr('height', d => height - margin.bottom - yScale(d[valueKey] || 0))
+                        .attr('fill', (d, i) => colors[i % colors.length])
+                        .on('mouseover', (event, d) => {
+                            this.showTooltip(event, `${d.category || d.year || d.speed || '数据点'}: ${d[valueKey] || 0}`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+                }
+            }
+
+            // 渲染GMV柱形图
+            renderGMVBarChart(svg, dataset, colors, width, height, margin) {
+                const xScale = d3.scaleBand()
+                    .domain(dataset.data.map(d => d.year))
+                    .range([margin.left, width - margin.right])
+                    .padding(0.3);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(dataset.data, d => d.gmv)])
+                    .range([height - margin.bottom, margin.top]);
+
+                // 添加坐标轴
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(xScale))
+                    .append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 35)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('财年');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(yScale))
+                    .append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -40)
+                    .attr('x', -height / 2)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#666')
+                    .text('GMV (亿元)');
+
+                // 添加柱形
+                svg.selectAll('.bar')
+                    .data(dataset.data)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'bar')
+                    .attr('x', d => xScale(d.year))
+                    .attr('y', d => yScale(d.gmv))
+                    .attr('width', xScale.bandwidth())
+                    .attr('height', d => height - margin.bottom - yScale(d.gmv))
+                    .attr('fill', (d, i) => colors[i % colors.length])
+                    .on('mouseover', (event, d) => {
+                        this.showTooltip(event, `${d.year}<br>GMV: ${d.gmv.toLocaleString()} 亿元<br>增长率: ${d.growth}%`);
+                    })
+                    .on('mouseout', () => this.hideTooltip());
+
+                // 添加数值标签
+                svg.selectAll('.label')
+                    .data(dataset.data)
+                    .enter()
+                    .append('text')
+                    .attr('x', d => xScale(d.year) + xScale.bandwidth() / 2)
+                    .attr('y', d => yScale(d.gmv) - 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '12px')
+                    .attr('fill', '#333')
+                    .text(d => d.gmv.toLocaleString());
+            }
+
+            // 其他图表渲染方法
+            renderPieChart(container, dataset, colors) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 400;
+                container.appendChild(canvas);
+
+                if (dataset.type === 'composition') {
+                    const ctx = canvas.getContext('2d');
+                    const total = dataset.data.reduce((sum, item) => sum + item.amount, 0);
+                    let startAngle = 0;
+
+                    dataset.data.forEach((item, i) => {
+                        const sliceAngle = (item.amount / total) * 2 * Math.PI;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(200, 200);
+                        ctx.arc(200, 200, 150, startAngle, startAngle + sliceAngle);
+                        ctx.closePath();
+                        
+                        ctx.fillStyle = item.color || colors[i % colors.length];
+                        ctx.fill();
+                        
+                        const angle = startAngle + sliceAngle / 2;
+                        const x = 200 + Math.cos(angle) * 120;
+                        const y = 200 + Math.sin(angle) * 120;
+                        
+                        ctx.fillStyle = '#333';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(item.category.substring(0, 4), x, y);
+                        
+                        startAngle += sliceAngle;
+                    });
+                }
+            }
+
+            renderScatterChart(container, dataset, colors) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                if (dataset.type === 'correlation') {
+                    const xScale = d3.scaleLinear()
+                        .domain([0, 110])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, 60])
+                        .range([height - margin.bottom, margin.top]);
+
+                    svg.selectAll('.dot')
+                        .data(dataset.data)
+                        .enter()
+                        .append('circle')
+                        .attr('cx', d => xScale(d.speed))
+                        .attr('cy', d => yScale(d.distance))
+                        .attr('r', 6)
+                        .attr('fill', colors[0])
+                        .attr('opacity', 0.7)
+                        .on('mouseover', (event, d) => {
+                            this.showTooltip(event, `速度: ${d.speed} km/h<br>制动距离: ${d.distance} m<br>风险等级: ${d.risk}`);
+                        })
+                        .on('mouseout', () => this.hideTooltip());
+                }
+            }
+
+            renderAreaChart(container, dataset, colors) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                if (dataset.type === 'comparison') {
+                    const xScale = d3.scaleLinear()
+                        .domain([1, 12])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, 400])
+                        .range([height - margin.bottom, margin.top]);
+
+                    const companies = ['companyA', 'companyB', 'companyC'];
+                    companies.forEach((company, i) => {
+                        const area = d3.area()
+                            .x((d, i) => xScale(i + 1))
+                            .y0(height - margin.bottom)
+                            .y1(d => yScale(d))
+                            .curve(d3.curveMonotoneX);
+
+                        svg.append('path')
+                            .datum(dataset.data[company])
+                            .attr('fill', colors[i])
+                            .attr('opacity', 0.5)
+                            .attr('d', area);
+                    });
+                }
+            }
+
+            renderRadarChart(container, dataset, colors) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 400;
+                container.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#f8f9fa';
+                ctx.fillRect(0, 0, 400, 400);
+
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.fillText('雷达图功能开发中...', 200, 200);
+                ctx.fillText('敬请期待更多功能', 200, 220);
+            }
+
+            // 更新数据表格
+            updateDataTable() {
+                const container = document.getElementById('table-container');
+                const dataset = this.datasets[this.currentDataset];
+                
+                let html = '<table><thead><tr>';
+                
+                if (dataset.type === 'time-series') {
+                    html += '<th>天数</th><th>最高温度</th><th>最低温度</th></tr></thead><tbody>';
+                    dataset.data.days.forEach((day, i) => {
+                        html += `<tr><td>${day}</td><td>${dataset.data.maxTemp[i]}°C</td><td>${dataset.data.minTemp[i]}°C</td></tr>`;
+                    });
+                } else if (dataset.type === 'comparison') {
+                    html += '<th>月份</th><th>公司A</th><th>公司B</th><th>公司C</th></tr></thead><tbody>';
+                    dataset.data.months.forEach((month, i) => {
+                        html += `<tr><td>${month}月</td><td>${dataset.data.companyA[i]}</td><td>${dataset.data.companyB[i]}</td><td>${dataset.data.companyC[i]}</td></tr>`;
+                    });
+                } else {
+                    const keys = Object.keys(dataset.data[0]);
+                    html += keys.map(key => `<th>${key}</th>`).join('') + '</tr></thead><tbody>';
+                    dataset.data.forEach(item => {
+                        html += '<tr>' + keys.map(key => {
+                            let value = item[key];
+                            if (key === 'gmv') value = value.toLocaleString() + ' 亿元';
+                            if (key === 'rate') value = (value * 100).toFixed(1) + '%';
+                            if (key === 'amount') value = value + ' 元';
+                            if (key === 'percentage') value = value + '%';
+                            if (key === 'distance') value = value + ' m';
+                            if (key === 'speed') value = value + ' km/h';
+                            return `<td>${value}</td>`;
+                        }).join('') + '</tr>';
+                    });
+                }
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            // 工具提示功能
+            showTooltip(event, content) {
+                let tooltip = d3.select('.tooltip');
+                if (tooltip.empty()) {
+                    tooltip = d3.select('body').append('div')
+                        .attr('class', 'tooltip')
+                        .style('opacity', 0)
+                        .style('position', 'absolute')
+                        .style('background', 'rgba(0,0,0,0.8)')
+                        .style('color', 'white')
+                        .style('padding', '10px')
+                        .style('border-radius', '5px')
+                        .style('pointer-events', 'none')
+                        .style('z-index', '1000');
+                }
+
+                tooltip.html(content)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px')
+                    .transition()
+                    .duration(200)
+                    .style('opacity', 1);
+            }
+
+            hideTooltip() {
+                d3.select('.tooltip')
+                    .transition()
+                    .duration(200)
+                    .style('opacity', 0);
+            }
+
+            // 导出数据
+            exportData() {
+                const dataset = this.datasets[this.currentDataset];
+                const dataStr = JSON.stringify(dataset, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${dataset.name}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // 重置视图
+            resetView() {
+                this.currentChartType = 'line';
+                this.currentDataset = 'temperature';
+                this.currentColorScheme = 'viridis';
+                
+                document.querySelectorAll('.chart-btn').forEach((btn, i) => {
+                    btn.classList.toggle('active', i === 0);
+                });
+                
+                document.querySelectorAll('.color-btn').forEach((btn, i) => {
+                    btn.classList.toggle('active', i === 0);
+                });
+                
+                document.getElementById('dataset-select').value = 'temperature';
+                
+                this.updateStatsPanel();
+                this.renderChart();
+                this.updateDataTable();
+            }
+        }
+
+        // 初始化平台
+        document.addEventListener('DOMContentLoaded', () => {
+            window.platform = new DataVisualizationPlatform();
+            console.log('数据可视化平台初始化完成');
+        });
+    </script>
+</body>
+</html>

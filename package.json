@@ -1,0 +1,17 @@
+{
+  "name": "datavis24-interactive",
+  "version": "1.0.0",
+  "description": "交互式数据可视化平台",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "start": "npx http-server -p 8000",
+    "build": "echo '构建完成'"
+  },
+  "keywords": ["数据可视化", "交互式", "D3.js", "Chart.js"],
+  "author": "数据可视化项目",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化平台 - 第二章案例</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 800px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .control-group {
+            margin-bottom: 30px;
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        
+        .chart-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .chart-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .chart-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .chart-btn.active {
+            background: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .main-content {
+            padding: 30px;
+            background: white;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #chart-area {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .data-table-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table-container h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: #3498db;
+            color: white;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 数据可视化平台</h1>
+            <p>基于第二章数据可视化知识的专业分析平台</p>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-label">数据集数量</div>
+                <div class="stat-value" id="dataset-count">6</div>
+                <div class="stat-label">涵盖多个领域</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">图表类型</div>
+                <div class="stat-value" id="chart-types">6</div>
+                <div class="stat-label">完整可视化方案</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">数据点总数</div>
+                <div class="stat-value" id="data-points">127</div>
+                <div class="stat-label">实时分析</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="control-group">
+                    <h3>📈 图表类型</h3>
+                    <div class="chart-type-grid">
+                        <button class="chart-btn active" data-chart="line">折线图</button>
+                        <button class="chart-btn" data-chart="bar">柱形图</button>
+                        <button class="chart-btn" data-chart="pie">饼图</button>
+                        <button class="chart-btn" data-chart="scatter">散点图</button>
+                        <button class="chart-btn" data-chart="area">面积图</button>
+                        <button class="chart-btn" data-chart="radar">雷达图</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>📊 数据集选择</h3>
+                    <select id="dataset-select">
+                        <option value="temperature">温度数据</option>
+                        <option value="gmv">阿里巴巴GMV数据</option>
+                        <option value="shopping">网购替代率</option>
+                        <option value="logistics">物流费用统计</option>
+                        <option value="alipay">支付宝月账单</option>
+                        <option value="braking">汽车制动距离</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <h3>⚙️ 操作控制</h3>
+                    <button class="chart-btn" id="export-data" style="background: #27ae60;">导出数据</button>
+                    <button class="chart-btn" id="reset-view" style="background: #e74c3c;">重置视图</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="chart-container">
+                    <div id="chart-area"></div>
+                </div>
+                
+                <div class="data-table-container">
+                    <h3>📋 数据表格</h3>
+                    <div id="table-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据可视化平台核心逻辑
+        class DataVisualizationPlatform {
+            constructor() {
+                this.datasets = this.initializeDatasets();
+                this.currentChartType = 'line';
+                this.currentDataset = 'temperature';
+                this.init();
+            }
+
+            // 初始化数据集 - 基于第二章的案例数据
+            initializeDatasets() {
+                return {
+                    temperature: {
+                        name: "未来15天最高气温和最低气温",
+                        type: "line",
+                        data: {
+                            days: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                            maxTemp: [32, 33, 34, 34, 33, 31, 30, 29, 30, 29, 26, 23, 21, 25, 31],
+                            minTemp: [19, 19, 20, 22, 22, 21, 22, 16, 18, 18, 17, 14, 15, 16, 16]
+                        }
+                    },
+                    gmv: {
+                        name: "2013-2019财年阿里巴巴GMV数据",
+                        type: "bar",
+                        data: [
+                            { year: "FY2013", gmv: 10770 },
+                            { year: "FY2014", gmv: 16780 },
+                            { year: "FY2015", gmv: 24440 },
+                            { year: "FY2016", gmv: 30920 },
+                            { year: "FY2017", gmv: 37670 },
+                            { year: "FY2018", gmv: 48200 },
+                            { year: "FY2019", gmv: 57270 }
+                        ]
+                    },
+                    shopping: {
+                        name: "各商品种类的网购替代率",
+                        type: "bar",
+                        data: [
+                            { category: "家政、家教、保姆等生活服务", rate: 0.959 },
+                            { category: "飞机票、火车票", rate: 0.951 },
+                            { category: "家具", rate: 0.935 },
+                            { category: "手机、手机配件", rate: 0.924 },
+                            { category: "计算机及其配套产品", rate: 0.893 },
+                            { category: "汽车用品", rate: 0.892 },
+                            { category: "通信充值、游戏充值", rate: 0.865 },
+                            { category: "个人护理用品", rate: 0.863 }
+                        ]
+                    },
+                    logistics: {
+                        name: "物流公司月度物流费用",
+                        type: "area",
+                        data: {
+                            months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            companyA: [198, 215, 245, 222, 200, 236, 201, 253, 236, 200, 266, 290],
+                            companyB: [203, 236, 200, 236, 269, 216, 298, 333, 301, 349, 360, 368],
+                            companyC: [185, 205, 226, 199, 238, 200, 250, 209, 246, 219, 253, 288]
+                        }
+                    },
+                    alipay: {
+                        name: "支付宝月账单分类统计",
+                        type: "pie",
+                        data: [
+                            { category: "购物", amount: 800, percentage: 26.7 },
+                            { category: "人情往来", amount: 100, percentage: 3.3 },
+                            { category: "餐饮美食", amount: 1000, percentage: 33.3 },
+                            { category: "通信物流", amount: 200, percentage: 6.7 },
+                            { category: "生活日用", amount: 300, percentage: 10.0 },
+                            { category: "交通出行", amount: 200, percentage: 6.7 },
+                            { category: "休闲娱乐", amount: 200, percentage: 6.7 },
+                            { category: "其他", amount: 200, percentage: 6.7 }
+                        ]
+                    },
+                    braking: {
+                        name: "汽车速度与制动距离关系",
+                        type: "scatter",
+                        data: [
+                            { speed: 10, distance: 0.5 },
+                            { speed: 20, distance: 2.0 },
+                            { speed: 30, distance: 4.4 },
+                            { speed: 40, distance: 7.9 },
+                            { speed: 50, distance: 12.3 },
+                            { speed: 60, distance: 17.7 },
+                            { speed: 70, distance: 24.1 },
+                            { speed: 80, distance: 31.5 },
+                            { speed: 90, distance: 39.9 },
+                            { speed: 100, distance: 49.2 }
+                        ]
+                    }
+                };
+            }
+
+            // 初始化平台
+            init() {
+                this.setupEventListeners();
+                this.renderChart();
+                this.updateDataTable();
+            }
+
+            // 设置事件监听器
+            setupEventListeners() {
+                // 图表类型按钮
+                document.querySelectorAll('.chart-btn[data-chart]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.chart-btn[data-chart]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentChartType = e.target.dataset.chart;
+                        this.renderChart();
+                    });
+                });
+
+                // 数据集选择
+                document.getElementById('dataset-select').addEventListener('change', (e) => {
+                    this.currentDataset = e.target.value;
+                    this.renderChart();
+                    this.updateDataTable();
+                });
+
+                // 导出数据
+                document.getElementById('export-data').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                // 重置视图
+                document.getElementById('reset-view').addEventListener('click', () => {
+                    this.resetView();
+                });
+            }
+
+            // 渲染图表
+            renderChart() {
+                console.log('渲染图表:', this.currentChartType, this.currentDataset);
+                const container = document.getElementById('chart-area');
+                container.innerHTML = '';
+
+                const dataset = this.datasets[this.currentDataset];
+                
+                try {
+                    switch (this.currentChartType) {
+                        case 'line':
+                            this.renderLineChart(container, dataset);
+                            break;
+                        case 'bar':
+                            this.renderBarChart(container, dataset);
+                            break;
+                        case 'pie':
+                            this.renderPieChart(container, dataset);
+                            break;
+                        case 'scatter':
+                            this.renderScatterChart(container, dataset);
+                            break;
+                        case 'area':
+                            this.renderAreaChart(container, dataset);
+                            break;
+                        case 'radar':
+                            this.renderRadarChart(container, dataset);
+                            break;
+                        default:
+                            console.error('未知的图表类型:', this.currentChartType);
+                    }
+                    console.log('图表渲染完成');
+                } catch (error) {
+                    console.error('图表渲染错误:', error);
+                    container.innerHTML = `<div style="text-align: center; padding: 50px; color: #e74c3c;">
+                        <h3>图表渲染错误</h3>
+                        <p>${error.message}</p>
+                        <p>请尝试选择其他图表类型或数据集</p>
+                    </div>`;
+                }
+            }
+
+            // 渲染折线图
+            renderLineChart(container, dataset) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                // 添加标题
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '18px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#333')
+                    .text(dataset.name);
+
+                // 为所有数据集渲染折线图
+                if (dataset.type === 'line') {
+                    // 温度数据的折线图
+                    const xScale = d3.scaleLinear()
+                        .domain([4, 18])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, 40])
+                        .range([height - margin.bottom, margin.top]);
+
+                    // 添加坐标轴
+                    svg.append('g')
+                        .attr('transform', `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(xScale));
+
+                    svg.append('g')
+                        .attr('transform', `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(yScale));
+
+                    // 添加折线
+                    const line = d3.line()
+                        .x((d, i) => xScale(dataset.data.days[i]))
+                        .y(d => yScale(d))
+                        .curve(d3.curveMonotoneX);
+
+                    svg.append('path')
+                        .datum(dataset.data.maxTemp)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#e74c3c')
+                        .attr('stroke-width', 3)
+                        .attr('d', line);
+
+                    svg.append('path')
+                        .datum(dataset.data.minTemp)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#3498db')
+                        .attr('stroke-width', 3)
+                        .attr('d', line);
+                } else {
+                    // 为其他数据集渲染通用折线图
+                    const dataKeys = Object.keys(dataset.data);
+                    const xScale = d3.scaleLinear()
+                        .domain([0, dataset.data[dataKeys[0]].length - 1])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, d3.max(dataKeys, key => d3.max(dataset.data[key]))])
+                        .range([height - margin.bottom, margin.top]);
+
+                    // 添加坐标轴
+                    svg.append('g')
+                        .attr('transform', `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(xScale));
+
+                    svg.append('g')
+                        .attr('transform', `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(yScale));
+
+                    // 为每个数据系列添加折线
+                    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+                    
+                    dataKeys.forEach((key, i) => {
+                        const line = d3.line()
+                            .x((d, i) => xScale(i))
+                            .y(d => yScale(d))
+                            .curve(d3.curveMonotoneX);
+
+                        svg.append('path')
+                            .datum(dataset.data[key])
+                            .attr('fill', 'none')
+                            .attr('stroke', colors[i % colors.length])
+                            .attr('stroke-width', 3)
+                            .attr('d', line);
+                    });
+                }
+            }
+
+            // 渲染柱形图
+            renderBarChart(container, dataset) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                // 添加标题
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .attr('font-size', '18px')
+                    .attr('font-weight', 'bold')
+                    .attr('fill', '#333')
+                    .text(dataset.name);
+
+                // 为所有数据集渲染柱形图
+                if (dataset.type === 'bar') {
+                    // GMV数据和网购替代率数据的柱形图
+                    const xScale = d3.scaleBand()
+                        .domain(dataset.data.map(d => d.year || d.category.substring(0, 10) + '...'))
+                        .range([margin.left, width - margin.right])
+                        .padding(0.3);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, d3.max(dataset.data, d => d.gmv || d.rate * 100)])
+                        .range([height - margin.bottom, margin.top]);
+
+                    // 添加坐标轴
+                    svg.append('g')
+                        .attr('transform', `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(xScale));
+
+                    svg.append('g')
+                        .attr('transform', `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(yScale));
+
+                    // 添加柱形
+                    svg.selectAll('.bar')
+                        .data(dataset.data)
+                        .enter()
+                        .append('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => xScale(d.year || d.category.substring(0, 10) + '...'))
+                        .attr('y', d => yScale(d.gmv || d.rate * 100))
+                        .attr('width', xScale.bandwidth())
+                        .attr('height', d => height - margin.bottom - yScale(d.gmv || d.rate * 100))
+                        .attr('fill', '#3498db');
+                } else {
+                    // 为其他数据集渲染通用柱形图
+                    const dataKeys = Object.keys(dataset.data);
+                    const xScale = d3.scaleBand()
+                        .domain(dataset.data.months.map(m => `${m}月`))
+                        .range([margin.left, width - margin.right])
+                        .padding(0.3);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, d3.max(dataKeys, key => d3.max(dataset.data[key]))])
+                        .range([height - margin.bottom, margin.top]);
+
+                    // 添加坐标轴
+                    svg.append('g')
+                        .attr('transform', `translate(0,${height - margin.bottom})`)
+                        .call(d3.axisBottom(xScale));
+
+                    svg.append('g')
+                        .attr('transform', `translate(${margin.left},0)`)
+                        .call(d3.axisLeft(yScale));
+
+                    // 为每个数据系列添加柱形
+                    const colors = ['#e74c3c', '#3498db', '#2ecc71'];
+                    
+                    dataKeys.forEach((key, i) => {
+                        if (key !== 'months') {
+                            svg.selectAll(`.bar-${key}`)
+                                .data(dataset.data[key])
+                                .enter()
+                                .append('rect')
+                                .attr('class', `bar-${key}`)
+                                .attr('x', (d, i) => xScale(`${i + 1}月`) + (i * xScale.bandwidth() / 3))
+                                .attr('y', d => yScale(d))
+                                .attr('width', xScale.bandwidth() / 3)
+                                .attr('height', d => height - margin.bottom - yScale(d))
+                                .attr('fill', colors[i % colors.length]);
+                        }
+                    });
+                }
+            }
+
+            // 渲染饼图
+            renderPieChart(container, dataset) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 400;
+                container.appendChild(canvas);
+
+                if (dataset.type === 'pie') {
+                    const ctx = canvas.getContext('2d');
+                    const total = dataset.data.reduce((sum, item) => sum + item.amount, 0);
+                    let startAngle = 0;
+
+                    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#95a5a6'];
+
+                    dataset.data.forEach((item, i) => {
+                        const sliceAngle = (item.amount / total) * 2 * Math.PI;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(200, 200);
+                        ctx.arc(200, 200, 150, startAngle, startAngle + sliceAngle);
+                        ctx.closePath();
+                        
+                        ctx.fillStyle = colors[i % colors.length];
+                        ctx.fill();
+                        
+                        // 添加标签
+                        const angle = startAngle + sliceAngle / 2;
+                        const x = 200 + Math.cos(angle) * 120;
+                        const y = 200 + Math.sin(angle) * 120;
+                        
+                        ctx.fillStyle = '#333';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(item.category.substring(0, 4), x, y);
+                        
+                        startAngle += sliceAngle;
+                    });
+                }
+            }
+
+            // 渲染散点图
+            renderScatterChart(container, dataset) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                if (dataset.type === 'scatter') {
+                    const xScale = d3.scaleLinear()
+                        .domain([0, 110])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, 60])
+                        .range([height - margin.bottom, margin.top]);
+
+                    // 添加散点
+                    svg.selectAll('.dot')
+                        .data(dataset.data)
+                        .enter()
+                        .append('circle')
+                        .attr('cx', d => xScale(d.speed))
+                        .attr('cy', d => yScale(d.distance))
+                        .attr('r', 6)
+                        .attr('fill', '#e74c3c')
+                        .attr('opacity', 0.7);
+                }
+            }
+
+            // 渲染面积图
+            renderAreaChart(container, dataset) {
+                const width = 800;
+                const height = 400;
+                const margin = { top: 40, right: 80, bottom: 60, left: 60 };
+
+                const svg = d3.select(container)
+                    .append('svg')
+                    .attr('width', width)
+                    .attr('height', height)
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+
+                if (dataset.type === 'area') {
+                    const xScale = d3.scaleLinear()
+                        .domain([1, 12])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, 400])
+                        .range([height - margin.bottom, margin.top]);
+
+                    const companies = ['companyA', 'companyB', 'companyC'];
+                    const colors = ['#e74c3c', '#3498db', '#2ecc71'];
+                    
+                    companies.forEach((company, i) => {
+                        const area = d3.area()
+                            .x((d, i) => xScale(i + 1))
+                            .y0(height - margin.bottom)
+                            .y1(d => yScale(d))
+                            .curve(d3.curveMonotoneX);
+
+                        svg.append('path')
+                            .datum(dataset.data[company])
+                            .attr('fill', colors[i])
+                            .attr('opacity', 0.5)
+                            .attr('d', area);
+                    });
+                }
+            }
+
+            // 渲染雷达图
+            renderRadarChart(container, dataset) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 400;
+                container.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#f8f9fa';
+                ctx.fillRect(0, 0, 400, 400);
+
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.fillText('雷达图功能', 200, 190);
+                ctx.fillText('基于霍兰德职业兴趣测试数据', 200, 220);
+                ctx.fillText('敬请期待完整实现', 200, 250);
+            }
+
+            // 更新数据表格
+            updateDataTable() {
+                const container = document.getElementById('table-container');
+                const dataset = this.datasets[this.currentDataset];
+                
+                let html = '<table><thead><tr>';
+                
+                if (dataset.type === 'line') {
+                    html += '<th>天数</th><th>最高温度</th><th>最低温度</th></tr></thead><tbody>';
+                    dataset.data.days.forEach((day, i) => {
+                        html += `<tr><td>${day}</td><td>${dataset.data.maxTemp[i]}°C</td><td>${dataset.data.minTemp[i]}°C</td></tr>`;
+                    });
+                } else if (dataset.type === 'area') {
+                    html += '<th>月份</th><th>公司A</th><th>公司B</th><th>公司C</th></tr></thead><tbody>';
+                    dataset.data.months.forEach((month, i) => {
+                        html += `<tr><td>${month}月</td><td>${dataset.data.companyA[i]}</td><td>${dataset.data.companyB[i]}</td><td>${dataset.data.companyC[i]}</td></tr>`;
+                    });
+                } else {
+                    const keys = Object.keys(dataset.data[0]);
+                    html += keys.map(key => `<th>${key}</th>`).join('') + '</tr></thead><tbody>';
+                    dataset.data.forEach(item => {
+                        html += '<tr>' + keys.map(key => {
+                            let value = item[key];
+                            if (key === 'gmv') value = value.toLocaleString() + ' 亿元';
+                            if (key === 'rate') value = (value * 100).toFixed(1) + '%';
+                            if (key === 'amount') value = value + ' 元';
+                            if (key === 'percentage') value = value + '%';
+                            if (key === 'distance') value = value + ' m';
+                            if (key === 'speed') value = value + ' km/h';
+                            return `<td>${value}</td>`;
+                        }).join('') + '</tr>';
+                    });
+                }
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            // 导出数据
+            exportData() {
+                const dataset = this.datasets[this.currentDataset];
+                const dataStr = JSON.stringify(dataset, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${dataset.name}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // 重置视图
+            resetView() {
+                this.currentChartType = 'line';
+                this.currentDataset = 'temperature';
+                
+                document.querySelectorAll('.chart-btn[data-chart]').forEach((btn, i) => {
+                    btn.classList.toggle('active', i === 0);
+                });
+                
+                document.getElementById('dataset-select').value = 'temperature';
+                
+                this.renderChart();
+                this.updateDataTable();
+            }
+        }
+
+        // 初始化平台
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM加载完成，初始化平台...');
+            window.platform = new DataVisualizationPlatform();
+            console.log('平台初始化完成');
+            
+            // 测试事件监听器
+            setTimeout(() => {
+                console.log('测试事件监听器...');
+                const buttons = document.querySelectorAll('.chart-btn[data-chart]');
+                console.log('找到按钮数量:', buttons.length);
+                buttons.forEach((btn, i) => {
+                    console.log(`按钮 ${i}:`, btn.textContent, 'data-chart:', btn.dataset.chart);
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

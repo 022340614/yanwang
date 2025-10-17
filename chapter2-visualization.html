@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二章数据可视化平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .chart-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        select, button {
+            padding: 10px 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin: 5px;
+            background: white;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        button.active {
+            background: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 第二章数据可视化平台</h1>
+            <p>基于Matplotlib案例的10种图形可视化</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h4>选择图表类型：</h4>
+                <div class="button-group">
+                    <button class="active" onclick="showChart('line')">折线图</button>
+                    <button onclick="showChart('bar')">柱形图</button>
+                    <button onclick="showChart('horizontal-bar')">条形图</button>
+                    <button onclick="showChart('area')">面积图</button>
+                    <button onclick="showChart('pie')">饼图</button>
+                    <button onclick="showChart('scatter')">散点图</button>
+                    <button onclick="showChart('histogram')">直方图</button>
+                    <button onclick="showChart('box')">箱形图</button>
+                    <button onclick="showChart('radar')">雷达图</button>
+                    <button onclick="showChart('errorbar')">误差棒图</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>温度变化折线图</h3>
+                <div class="chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>GMV柱形图</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>网购替代率条形图</h3>
+                <div class="chart-container">
+                    <canvas id="horizontalBarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>物流费用面积图</h3>
+                <div class="chart-container">
+                    <canvas id="areaChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>支付宝账单饼图</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>制动距离散点图</h3>
+                <div class="chart-container">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>成绩分布直方图</h3>
+                <div class="chart-container">
+                    <canvas id="histogramChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>发电量箱形图</h3>
+                <div class="chart-container">
+                    <canvas id="boxChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>职业兴趣雷达图</h3>
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>生物量误差棒图</h3>
+                <div class="chart-container">
+                    <canvas id="errorbarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initCharts() {
+            // 1. 温度折线图
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'],
+                    datasets: [{
+                        label: '最高温度',
+                        data: [32, 33, 34, 34, 33, 31, 30, 29, 30, 29, 26, 23, 21, 25, 31],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: '最低温度',
+                        data: [19, 19, 20, 22, 22, 21, 22, 16, 18, 18, 17, 14, 15, 16, 16],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '未来15天温度变化' }
+                    }
+                }
+            });
+
+            // 2. GMV柱形图
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['FY2013', 'FY2014', 'FY2015', 'FY2016', 'FY2017', 'FY2018', 'FY2019'],
+                    datasets: [{
+                        label: 'GMV (亿元)',
+                        data: [10770, 16780, 24440, 30920, 37670, 48200, 57270],
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '阿里巴巴GMV数据' }
+                    }
+                }
+            });
+
+            // 3. 网购替代率条形图
+            new Chart(document.getElementById('horizontalBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['生活服务', '机票车票', '家具', '手机配件', '计算机', '汽车用品', '通信充值', '个人护理'],
+                    datasets: [{
+                        label: '替代率',
+                        data: [0.959, 0.951, 0.935, 0.924, 0.893, 0.892, 0.865, 0.863],
+                        backgroundColor: '#2ecc71'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '网购替代率分析' }
+                    }
+                }
+            });
+
+            // 4. 物流费用面积图
+            new Chart(document.getElementById('areaChart'), {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    datasets: [{
+                        label: '公司A',
+                        data: [198, 215, 245, 222, 200, 236, 201, 253, 236, 200, 266, 290],
+                        backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                        fill: true
+                    }, {
+                        label: '公司B',
+                        data: [203, 236, 200, 236, 269, 216, 298, 333, 301, 349, 360, 368],
+                        backgroundColor: 'rgba(52, 152, 219, 0.5)',
+                        fill: true
+                    }, {
+                        label: '公司C',
+                        data: [185, 205, 226, 199, 238, 200, 250, 209, 246, 219, 253, 288],
+                        backgroundColor: 'rgba(46, 204, 113, 0.5)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '物流费用统计' }
+                    }
+                }
+            });
+
+            // 5. 支付宝账单饼图
+            new Chart(document.getElementById('pieChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'],
+                    datasets: [{
+                        data: [800, 100, 1000, 200, 300, 200, 200, 200],
+                        backgroundColor: [
+                            '#e74c3c', '#3498db', '#2ecc71', '#f39c12',
+                            '#9b59b6', '#1abc9c', '#34495e', '#95a5a6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '支付宝月账单' }
+                    }
+                }
+            });
+
+            // 6. 制动距离散点图
+            new Chart(document.getElementById('scatterChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '制动距离',
+                        data: [
+                            {x: 10, y: 0.5}, {x: 20, y: 2.0}, {x: 30, y: 4.4},
+                            {x: 40, y: 7.9}, {x: 50, y: 12.3}, {x: 60, y: 17.7},
+                            {x: 70, y: 24.1}, {x: 80, y: 31.5}, {x: 90, y: 39.9},
+                            {x: 100, y: 49.2}
+                        ],
+                        backgroundColor: '#e74c3c',
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '速度与制动距离关系' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: '速度 (km/h)' } },
+                        y: { title: { display: true, text: '制动距离 (m)' } }
+                    }
+                }
+            });
+
+            // 7. 成绩分布直方图
+            new Chart(document.getElementById('histogramChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['0-20', '20-40', '40-60', '60-80', '80-100'],
+                    datasets: [{
+                        label: '学生人数',
+                        data: [5, 12, 25, 18, 8],
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '成绩分布直方图' }
+                    }
+                }
+            });
+
+            // 8. 发电量箱形图
+            new Chart(document.getElementById('boxChart'), {
+                type: 'boxplot',
+                data: {
+                    labels: ['2018年', '2017年'],
+                    datasets: [{
+                        data: [
+                            [4600, 4800, 5200, 5600, 6000, 6400],
+                            [4500, 4700, 5000, 5400, 5800, 6200]
+                        ],
+                        backgroundColor: 'rgba(52, 152, 219, 0.5)',
+                        borderColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '发电量统计箱形图' }
+                    }
+                }
+            });
+
+            // 9. 职业兴趣雷达图
+            new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['研究型', '艺术型', '社会型', '企业型', '传统型', '现实型'],
+                    datasets: [{
+                        label: '兴趣度',
+                        data: [0.40, 0.32, 0.35, 0.30, 0.30, 0.88],
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderColor: '#e74c3c'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '职业兴趣测试' }
+                    }
+                }
+            });
+
+            // 10. 生物量误差棒图
+            new Chart(document.getElementById('errorbarChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['春季', '夏季', '秋季'],
+                    datasets: [{
+                        label: '树种A',
+                        data: [2.04, 1.57, 1.63],
+                        backgroundColor: '#e74c3c'
+                    }, {
+                        label: '树种B',
+                        data: [1.69, 1.61, 1.64],
+                        backgroundColor: '#3498db'
+                    }, {
+                        label: '树种C',
+                        data: [4.65, 4.99, 4.94],
+                        backgroundColor: '#2ecc71'
+                    }, {
+                        label: '树种D',
+                        data: [3.39, 2.33, 4.10],
+                        backgroundColor: '#f39c12'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '细根生物量误差棒图' }
+                    }
+                }
+            });
+        }
+
+        // 显示/隐藏图表
+        function showChart(type) {
+            // 移除所有active类
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 为当前按钮添加active类
+            event.target.classList.add('active');
+            
+            // 隐藏所有图表卡片
+            document.querySelectorAll('.chart-card').forEach(card => {
+                card.style.display = 'none';
+            });
+            
+            // 显示对应的图表
+            const charts = {
+                'line': 'lineChart',
+                'bar': 'barChart',
+                'horizontal-bar': 'horizontalBarChart',
+                'area': 'areaChart',
+                'pie': 'pieChart',
+                'scatter': 'scatterChart',
+                'histogram': 'histogramChart',
+                'box': 'boxChart',
+                'radar': 'radarChart',
+                'errorbar': 'errorbarChart'
+            };
+            
+            if (charts[type]) {
+                document.querySelector(`#${charts[type]}`).closest('.chart-card').style.display = 'block';
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            // 默认显示所有图表
+            document.querySelectorAll('.chart-card').forEach(card => {
+                card.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

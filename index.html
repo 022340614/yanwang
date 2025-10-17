@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化交互平台</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>数据可视化交互平台</h1>
+        <nav>
+            <button class="nav-btn active" data-chart="line">折线图</button>
+            <button class="nav-btn" data-chart="bar">柱形图</button>
+            <button class="nav-btn" data-chart="pie">饼图</button>
+            <button class="nav-btn" data-chart="scatter">散点图</button>
+            <button class="nav-btn" data-chart="radar">雷达图</button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="controls">
+            <div class="control-group">
+                <label for="dataset-select">选择数据集:</label>
+                <select id="dataset-select">
+                    <option value="temperature">温度数据</option>
+                    <option value="mpg">汽车油耗数据</option>
+                    <option value="arrests">美国犯罪数据</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="color-scheme">颜色方案:</label>
+                <select id="color-scheme">
+                    <option value="viridis">Viridis</option>
+                    <option value="plasma">Plasma</option>
+                    <option value="inferno">Inferno</option>
+                    <option value="category10">分类10色</option>
+                </select>
+            </div>
+            <button id="reset-view">重置视图</button>
+        </div>
+
+        <div class="chart-container">
+            <div id="chart-area"></div>
+            <div class="chart-info">
+                <h3 id="chart-title">图表信息</h3>
+                <p id="chart-description">选择图表类型和数据来开始可视化</p>
+            </div>
+        </div>
+
+        <div class="data-table">
+            <h3>数据预览</h3>
+            <div id="table-container"></div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
