@@ -1,0 +1,9 @@
+/* 给页面设置背景色和字体 */
+body {
+  background-color: #f0f0f0;
+  font-family: "微软雅黑", sans-serif;
+}
+/* 给标题设置颜色 */
+h1 {
+  color: #2c3e50;
+}
