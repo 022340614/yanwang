@@ -1,20 +1,12 @@
-# 数据可视化项目 (Data Visualization Project)
+# 数据可视化项目 - 第二章 (Data Visualization Project - Chapter 2)
 
-这是一个基于Python和matplotlib的数据可视化学习项目，包含9个章节的Jupyter笔记本，涵盖了各种常见图表的绘制方法和实际应用案例。
+这是一个专注于图表类型详解的数据可视化项目，包含第二章的Jupyter笔记本，详细介绍了各种常见图表的绘制方法和应用场景。
 
 ## 项目结构
 
 ```
 datavis24/
-├── 第1章.ipynb          # matplotlib基础图表绘制
 ├── 第2章.ipynb          # 各种图表类型详解
-├── 第3章.ipynb          # 图表样式和美化
-├── 第4章.ipynb          # 高级可视化技巧
-├── 第5章.ipynb          # 交互式可视化
-├── 第6章.ipynb          # 数据预处理与可视化
-├── 第7章.ipynb          # 多图表组合
-├── 第8章.ipynb          # 实际应用案例
-├── 第9章.ipynb          # 项目总结与扩展
 ├── 素材/                # 数据文件
 │   ├── 2014_us_cities.csv
 │   ├── health.xlsx
@@ -25,23 +17,20 @@ datavis24/
 └── README.md
 ```
 
-## 涵盖的图表类型
+## 第二章涵盖的图表类型
 
-### 基础图表
-- 折线图 (Line Plot)
-- 柱形图 (Bar Chart)
-- 条形图 (Barh Chart)
-- 饼图 (Pie Chart)
-- 散点图 (Scatter Plot)
+### 基础图表详解
+- 折线图 (Line Plot) - 趋势分析和时间序列数据
+- 柱形图 (Bar Chart) - 分类数据比较
+- 条形图 (Barh Chart) - 水平方向的数据展示
+- 饼图 (Pie Chart) - 比例和百分比数据
+- 散点图 (Scatter Plot) - 变量关系分析
 
-### 高级图表
-- 堆积面积图 (Stacked Area Chart)
-- 直方图 (Histogram)
-- 箱形图 (Box Plot)
-- 雷达图 (Radar Chart)
-- 误差棒图 (Error Bar Chart)
-- 气泡图 (Bubble Chart)
-- 圆环图 (Donut Chart)
+### 图表应用特点
+- 每种图表类型的适用场景
+- 数据格式要求和预处理
+- 样式定制和美化技巧
+- 实际业务应用案例
 
 ## 实际应用案例
 
@@ -87,12 +76,13 @@ jupyter notebook
 2. 在浏览器中打开相应的`.ipynb`文件
 3. 按顺序运行各个章节的代码单元格
 
-## 学习路径建议
+## 学习重点
 
-1. **第1章**: 熟悉matplotlib基础用法
-2. **第2章**: 掌握各种图表类型的绘制方法
-3. **第3-6章**: 学习图表美化和高级技巧
-4. **第7-9章**: 实践综合应用和项目开发
+**第二章重点内容**：
+- 各种图表类型的绘制原理和方法
+- 图表选择的最佳实践
+- 数据可视化的基本原则
+- 实际案例的代码实现
 
 ## 数据文件说明
 
