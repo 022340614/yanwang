@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第三章数据可视化 - Matplotlib图表展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 15px;
+        }
+        
+        .chart-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .section-divider {
+            text-align: center;
+            margin: 50px 0;
+            color: white;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .chart-card {
+                padding: 15px;
+            }
+            
+            .chart-title {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .chart-description {
+                font-size: 0.85rem;
+            }
+            
+            .section-divider {
+                font-size: 1.4rem;
+                margin: 30px 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                height: 200px;
+            }
+            
+            .chart-title {
+                font-size: 1.1rem;
+                padding-left: 10px;
+            }
+            
+            .section-divider {
+                font-size: 1.2rem;
+                margin: 20px 0;
+            }
+            
+            .chart-card {
+                padding: 12px;
+            }
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .chart-card:hover {
+                transform: none;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }
+            
+            .control-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>第三章数据可视化展示</h1>
+            <p>基于Matplotlib的图表配置与美化技巧</p>
+        </div>
+        
+        <div class="section-divider">基础图表配置</div>
+        
+        <div class="grid">
+            <div class="chart-card">
+                <h3 class="chart-title">正弦曲线和余弦曲线</h3>
+                <div class="chart-container">
+                    <canvas id="sinCosChart"></canvas>
+                </div>
+                <p class="chart-description">展示坐标轴标签、刻度范围、标题、图例、网格线等基础配置</p>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">2019年内地电影票房排行榜</h3>
+                <div class="chart-container">
+                    <canvas id="movieChart"></canvas>
+                </div>
+                <p class="chart-description">水平条形图，展示票房数据，包含坐标轴标签和刻度标签设置</p>
+            </div>
+        </div>
+        
+        <div class="section-divider">高级图表功能</div>
+        
+        <div class="grid">
+            <div class="chart-card">
+                <h3 class="chart-title">支付宝月账单报告</h3>
+                <div class="chart-container">
+                    <canvas id="alipayChart"></canvas>
+                </div>
+                <p class="chart-description">饼图展示消费比例，包含标题、图例和百分比显示</p>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">汽车速度与制动距离关系</h3>
+                <div class="chart-container">
+                    <canvas id="speedChart"></canvas>
+                </div>
+                <p class="chart-description">散点图展示速度与制动距离的线性关系，包含网格线</p>
+            </div>
+        </div>
+        
+        <div class="section-divider">参考线与注释功能</div>
+        
+        <div class="grid">
+            <div class="chart-card">
+                <h3 class="chart-title">高二年级英语成绩评估</h3>
+                <div class="chart-container">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+                <p class="chart-description">分组条形图，包含参考线显示全体平均成绩</p>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">阿里巴巴GMV增长趋势</h3>
+                <div class="chart-container">
+                    <canvas id="gmvChart"></canvas>
+                </div>
+                <p class="chart-description">柱状图展示GMV数据，包含数值标注</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动设备检测和配置
+        const isMobile = window.innerWidth < 768;
+        const chartFontSize = isMobile ? 10 : 12;
+        const titleFontSize = isMobile ? 14 : 16;
+        const legendPosition = isMobile ? 'bottom' : 'top';
+        
+        // 正弦曲线和余弦曲线
+        const sinCosCtx = document.getElementById('sinCosChart').getContext('2d');
+        const xValues = [];
+        const sinValues = [];
+        const cosValues = [];
+        
+        for (let x = -Math.PI; x <= Math.PI; x += 0.1) {
+            xValues.push(x);
+            sinValues.push(Math.sin(x));
+            cosValues.push(Math.cos(x));
+        }
+        
+        new Chart(sinCosCtx, {
+            type: 'line',
+            data: {
+                labels: xValues.map(x => {
+                    if (x === -Math.PI) return '-π';
+                    if (x === -Math.PI/2) return '-π/2';
+                    if (x === 0) return '0';
+                    if (x === Math.PI/2) return 'π/2';
+                    if (x === Math.PI) return 'π';
+                    return '';
+                }),
+                datasets: [
+                    {
+                        label: '正弦曲线',
+                        data: sinValues,
+                        borderColor: '#ff6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: '余弦曲线',
+                        data: cosValues,
+                        borderColor: '#36a2eb',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { 
+                            display: true, 
+                            text: 'x轴',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    y: {
+                        title: { 
+                            display: true, 
+                            text: 'y轴',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    }
+                },
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: '正弦曲线和余弦曲线',
+                        font: { size: titleFontSize }
+                    },
+                    legend: { 
+                        position: legendPosition,
+                        labels: { font: { size: chartFontSize } }
+                    }
+                }
+            }
+        });
+
+        // 电影票房排行榜
+        const movieCtx = document.getElementById('movieChart').getContext('2d');
+        const movieData = {
+            labels: ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生"],
+            datasets: [{
+                label: '票房(亿元)',
+                data: [48.57, 46.18, 42.05, 21.83, 17.03],
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        };
+        
+        new Chart(movieCtx, {
+            type: 'bar',
+            data: movieData,
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { 
+                            display: true, 
+                            text: '总票房(亿元)',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } }
+                    },
+                    y: {
+                        title: { 
+                            display: true, 
+                            text: '电影名称',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } }
+                    }
+                }
+            }
+        });
+
+        // 支付宝月账单
+        const alipayCtx = document.getElementById('alipayChart').getContext('2d');
+        new Chart(alipayCtx, {
+            type: 'pie',
+            data: {
+                labels: ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'],
+                datasets: [{
+                    data: [800, 100, 1000, 200, 300, 200, 200, 200],
+                    backgroundColor: [
+                        '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0',
+                        '#9966ff', '#ff9f40', '#8ac926', '#1982c4'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: '支付宝月账单报告',
+                        font: { size: titleFontSize }
+                    },
+                    legend: { 
+                        position: isMobile ? 'bottom' : 'right',
+                        labels: { font: { size: chartFontSize } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = Math.round((value / total) * 100);
+                                return `${context.label}: ${value}元 (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 汽车速度与制动距离
+        const speedCtx = document.getElementById('speedChart').getContext('2d');
+        const speedData = {
+            labels: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            datasets: [{
+                label: '制动距离(m)',
+                data: [0.5, 2.0, 4.4, 7.9, 12.3, 17.7, 24.1, 31.5, 39.9, 49.2],
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                pointRadius: isMobile ? 4 : 6,
+                pointHoverRadius: isMobile ? 6 : 8
+            }]
+        };
+        
+        new Chart(speedCtx, {
+            type: 'scatter',
+            data: speedData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: { 
+                            display: true, 
+                            text: '速度(km/h)',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    y: {
+                        title: { 
+                            display: true, 
+                            text: '制动距离(m)',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { font: { size: chartFontSize } }
+                    }
+                }
+            }
+        });
+
+        // 英语成绩评估
+        const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+        new Chart(scoreCtx, {
+            type: 'bar',
+            data: {
+                labels: ['高二1班', '高二2班', '高二3班', '高二4班', '高二5班', '高二6班'],
+                datasets: [
+                    {
+                        label: '男生平均成绩',
+                        data: [90.5, 89.5, 88.7, 88.5, 85.2, 86.6],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                    },
+                    {
+                        label: '女生平均成绩',
+                        data: [92.7, 87.0, 90.5, 85.0, 89.5, 89.8],
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { font: { size: chartFontSize } }
+                    },
+                    y: {
+                        title: { 
+                            display: true, 
+                            text: '分数',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } },
+                        min: 80,
+                        max: 95
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { font: { size: chartFontSize } }
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: 88.5,
+                                yMax: 88.5,
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: '全体平均成绩 88.5分',
+                                    position: 'end',
+                                    font: { size: chartFontSize }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 阿里巴巴GMV
+        const gmvCtx = document.getElementById('gmvChart').getContext('2d');
+        const gmvChart = new Chart(gmvCtx, {
+            type: 'bar',
+            data: {
+                labels: ["FY2013", "FY2014", "FY2015", "FY2016", "FY2017", "FY2018", "FY2019"],
+                datasets: [{
+                    label: 'GMV(亿元)',
+                    data: [10770, 16780, 24440, 30920, 37670, 48200, 57270],
+                    backgroundColor: 'rgba(153, 102, 255, 0.8)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { font: { size: chartFontSize } }
+                    },
+                    y: {
+                        title: { 
+                            display: true, 
+                            text: 'GMV(亿元)',
+                            font: { size: chartFontSize }
+                        },
+                        ticks: { font: { size: chartFontSize } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { font: { size: chartFontSize } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `GMV: ${context.raw.toLocaleString()}亿元`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 添加数值标注到GMV图表
+        gmvChart.data.datasets[0].data.forEach((value, index) => {
+            gmvChart.data.datasets.push({
+                type: 'line',
+                data: Array(gmvChart.data.labels.length).fill(null).map((_, i) => i === index ? value : null),
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#9966ff',
+                pointBorderWidth: 2,
+                pointRadius: isMobile ? 4 : 6,
+                showLine: false
+            });
+        });
+        
+        gmvChart.update();
+        
+        // 窗口大小变化时的响应式处理
+        window.addEventListener('resize', function() {
+            const newIsMobile = window.innerWidth < 768;
+            const newChartFontSize = newIsMobile ? 10 : 12;
+            const newTitleFontSize = newIsMobile ? 14 : 16;
+            const newLegendPosition = newIsMobile ? 'bottom' : 'top';
+            
+            // 重新配置所有图表
+            Chart.instances.forEach(chart => {
+                chart.options.plugins.title.font.size = newTitleFontSize;
+                chart.options.plugins.legend.labels.font.size = newChartFontSize;
+                chart.options.plugins.legend.position = newLegendPosition;
+                chart.options.scales.x.ticks.font.size = newChartFontSize;
+                chart.options.scales.y.ticks.font.size = newChartFontSize;
+                chart.options.scales.x.title.font.size = newChartFontSize;
+                chart.options.scales.y.title.font.size = newChartFontSize;
+                chart.update('none');
+            });
+        });
+    </script>
+</body>
+</html>
