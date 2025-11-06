@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数据可视化交互平台 - 022340614.xyz</title>
+    <title>数据可视化交互平台 | 022340614.xyz</title>
+    <meta name="description" content="基于Matplotlib的10种数据可视化图表展示平台，包含折线图、柱形图、饼图、雷达图等交互式图表">
+    <meta name="keywords" content="数据可视化, Matplotlib, 图表, 数据分析, 022340614.xyz">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -29,21 +31,56 @@
         }
         
         .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
         
         .header h1 {
-            font-size: 2.2rem;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
             margin-bottom: 10px;
+            opacity: 0.9;
+            animation: fadeInUp 1.2s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .controls {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 1px solid #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .chart-grid {
@@ -55,10 +92,28 @@
         
         .chart-card {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
         
         .chart-card h3 {
@@ -83,21 +138,42 @@
         }
         
         button {
-            background: #3498db;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            font-weight: 600;
+            border-radius: 25px;
+            padding: 14px 24px;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            min-width: 110px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
         }
         
         button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
         }
         
         button.active {
-            background: #e74c3c;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5);
+            transform: translateY(-3px) scale(1.02);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5);
+            }
+            50% {
+                box-shadow: 0 10px 30px rgba(231, 76, 60, 0.8);
+            }
+            100% {
+                box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5);
+            }
         }
         
         .control-group {
@@ -106,13 +182,17 @@
         
         .control-group h4 {
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
         }
         
         .button-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            justify-content: center;
         }
 
         /* 图片展示区域样式 */
@@ -140,22 +220,40 @@
 
         .gallery-item {
             background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gallery-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .gallery-item:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
         }
 
         .gallery-image {
             width: 100%;
             height: 200px;
             object-fit: contain;
-            border-radius: 5px;
-            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.05);
         }
 
         .gallery-item p {
@@ -173,10 +271,6 @@
             
             .gallery-image {
                 height: 150px;
-            }
-            
-            .chart-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -285,37 +379,107 @@
         <h3>数据可视化图片展示</h3>
         <div class="gallery-container">
             <div class="gallery-item">
-                <img src="85E8231EC8098827D91D23E908677B95.png" alt="数据可视化图片1" class="gallery-image">
-                <p>数据可视化图表1</p>
+                <img src="charts/line_chart.png" alt="折线图" class="gallery-image">
+                <p>温度变化折线图</p>
             </div>
             <div class="gallery-item">
-                <img src="263E9F1842E116B694B701C90793A2CB.png" alt="数据可视化图片2" class="gallery-image">
-                <p>数据可视化图表2</p>
+                <img src="charts/bar_chart.png" alt="柱形图" class="gallery-image">
+                <p>GMV柱形图</p>
             </div>
             <div class="gallery-item">
-                <img src="56538B5B1BCC04B8C55E7775779EA13E.png" alt="数据可视化图片3" class="gallery-image">
-                <p>数据可视化图表3</p>
+                <img src="charts/horizontal_bar_chart.png" alt="条形图" class="gallery-image">
+                <p>网购替代率条形图</p>
             </div>
             <div class="gallery-item">
-                <img src="D70CAF073F0C8B8A06449B3E03879304.png" alt="数据可视化图片4" class="gallery-image">
-                <p>数据可视化图表4</p>
+                <img src="charts/area_chart.png" alt="面积图" class="gallery-image">
+                <p>物流费用面积图</p>
             </div>
             <div class="gallery-item">
-                <img src="EFDE6B3090F315FB73DC9D1DF6C035D0.png" alt="数据可视化图片5" class="gallery-image">
-                <p>数据可视化图表5</p>
+                <img src="charts/pie_chart.png" alt="饼图" class="gallery-image">
+                <p>支付宝账单饼图</p>
             </div>
             <div class="gallery-item">
-                <img src="F3FD7F9737062B2DBF0309AD6C46A8C4.png" alt="数据可视化图片6" class="gallery-image">
-                <p>数据可视化图表6</p>
+                <img src="charts/scatter_chart.png" alt="散点图" class="gallery-image">
+                <p>制动距离散点图</p>
             </div>
             <div class="gallery-item">
-                <img src="F4E67BD1EF97379FAB64913472B7066C.png" alt="数据可视化图片7" class="gallery-image">
-                <p>数据可视化图表7</p>
+                <img src="charts/histogram_chart.png" alt="直方图" class="gallery-image">
+                <p>成绩分布直方图</p>
+            </div>
+            <div class="gallery-item">
+                <img src="charts/box_plot.png" alt="箱形图" class="gallery-image">
+                <p>发电量箱形图</p>
+            </div>
+            <div class="gallery-item">
+                <img src="charts/radar_chart.png" alt="雷达图" class="gallery-image">
+                <p>职业兴趣雷达图</p>
+            </div>
+            <div class="gallery-item">
+                <img src="charts/errorbar_chart.png" alt="误差棒图" class="gallery-image">
+                <p>生物量误差棒图</p>
             </div>
         </div>
     </div>
 
     <script>
+        // 误差棒图插件
+        const errorBarPlugin = {
+            id: 'errorBars',
+            afterDatasetsDraw(chart, args, options) {
+                const {ctx, data, scales} = chart;
+                
+                ctx.save();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                
+                data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    const yScale = scales.y;
+                    
+                    dataset.data.forEach((value, index) => {
+                        const bar = meta.data[index];
+                        if (!bar) return;
+                        
+                        const x = bar.x;
+                        const barWidth = bar.width;
+                        
+                        // 为不同树种设置不同的误差值
+                        const errorValues = {
+                            0: {plus: 0.3, minus: 0.2}, // 树种A
+                            1: {plus: 0.25, minus: 0.15}, // 树种B
+                            2: {plus: 0.4, minus: 0.3}, // 树种C
+                            3: {plus: 0.35, minus: 0.25} // 树种D
+                        };
+                        
+                        const errors = errorValues[datasetIndex] || {plus: 0.3, minus: 0.2};
+                        
+                        // 上误差线
+                        ctx.beginPath();
+                        ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value - errors.minus));
+                        ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value - errors.minus));
+                        ctx.stroke();
+                        
+                        // 下误差线
+                        ctx.beginPath();
+                        ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value + errors.plus));
+                        ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value + errors.plus));
+                        ctx.stroke();
+                        
+                        // 垂直线
+                        ctx.beginPath();
+                        ctx.moveTo(x, yScale.getPixelForValue(value - errors.minus));
+                        ctx.lineTo(x, yScale.getPixelForValue(value + errors.plus));
+                        ctx.stroke();
+                    });
+                });
+                
+                ctx.restore();
+            }
+        };
+
+        // 注册插件
+        Chart.register(errorBarPlugin);
+
         // 初始化所有图表
         function initCharts() {
             // 1. 温度折线图
@@ -489,18 +653,31 @@
                 }
             });
 
-            // 8. 发电量箱形图
+            // 8. 发电量箱形图 - 使用分组柱形图模拟箱形图
             new Chart(document.getElementById('boxChart'), {
-                type: 'boxplot',
+                type: 'bar',
                 data: {
                     labels: ['2018年', '2017年'],
                     datasets: [{
-                        data: [
-                            [4600, 4800, 5200, 5600, 6000, 6400],
-                            [4500, 4700, 5000, 5400, 5800, 6200]
-                        ],
-                        backgroundColor: 'rgba(52, 152, 219, 0.5)',
-                        borderColor: '#3498db'
+                        label: '最小值',
+                        data: [4600, 4500],
+                        backgroundColor: 'rgba(52, 152, 219, 0.6)'
+                    }, {
+                        label: '下四分位数',
+                        data: [4800, 4700],
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                    }, {
+                        label: '中位数',
+                        data: [5200, 5000],
+                        backgroundColor: 'rgba(52, 152, 219, 1.0)'
+                    }, {
+                        label: '上四分位数',
+                        data: [5600, 5400],
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                    }, {
+                        label: '最大值',
+                        data: [6000, 5800],
+                        backgroundColor: 'rgba(52, 152, 219, 0.6)'
                     }]
                 },
                 options: {
@@ -508,11 +685,17 @@
                     maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: '发电量统计箱形图' }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: '发电量 (万千瓦时)' },
+                            beginAtZero: false
+                        }
                     }
                 }
             });
 
-            // 9. 职业兴趣雷达图
+            // 9. 职业兴趣雷达图 - 优化显示
             new Chart(document.getElementById('radarChart'), {
                 type: 'radar',
                 data: {
@@ -521,19 +704,60 @@
                         label: '兴趣度',
                         data: [0.40, 0.32, 0.35, 0.30, 0.30, 0.88],
                         backgroundColor: 'rgba(231, 76, 60, 0.2)',
-                        borderColor: '#e74c3c'
+                        borderColor: '#e74c3c',
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#e74c3c',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: { display: true, text: '职业兴趣测试' }
+                        title: { 
+                            display: true, 
+                            text: '职业兴趣测试',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { 
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1,
+                            ticks: {
+                                stepSize: 0.2,
+                                backdropColor: 'transparent'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 2
+                        }
                     }
                 }
             });
 
-            // 10. 生物量误差棒图
+            // 10. 生物量误差棒图 - 使用自定义误差棒
             new Chart(document.getElementById('errorbarChart'), {
                 type: 'bar',
                 data: {
@@ -541,19 +765,27 @@
                     datasets: [{
                         label: '树种A',
                         data: [2.04, 1.57, 1.63],
-                        backgroundColor: '#e74c3c'
+                        backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 1
                     }, {
                         label: '树种B',
                         data: [1.69, 1.61, 1.64],
-                        backgroundColor: '#3498db'
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: '#3498db',
+                        borderWidth: 1
                     }, {
                         label: '树种C',
                         data: [4.65, 4.99, 4.94],
-                        backgroundColor: '#2ecc71'
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: '#2ecc71',
+                        borderWidth: 1
                     }, {
                         label: '树种D',
                         data: [3.39, 2.33, 4.10],
-                        backgroundColor: '#f39c12'
+                        backgroundColor: 'rgba(243, 156, 18, 0.7)',
+                        borderColor: '#f39c12',
+                        borderWidth: 1
                     }]
                 },
                 options: {
@@ -561,8 +793,15 @@
                     maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: '细根生物量误差棒图' }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: '生物量 (g/m²)' },
+                            beginAtZero: true
+                        }
                     }
-                }
+                },
+                plugins: [errorBarPlugin]
             });
         }
 
