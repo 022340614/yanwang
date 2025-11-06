@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第2章 数据可视化 - 022340614</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            color: #4a4a4a;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .chart-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .chart-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .chart-title {
+            font-size: 1.8em;
+            color: #4a4a4a;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .chart-description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .chart-description h3 {
+            color: #4a4a4a;
+            margin-bottom: 10px;
+        }
+        .chart-description p {
+            line-height: 1.6;
+            color: #666;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .chart-container {
+                height: 300px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            button {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 第2章 数据可视化 - 022340614</h1>
+            <p>10种数据可视化图表展示</p>
+            <p>学号: 022340614 | 本地访问: http://localhost:8000</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="showChart(0)">折线图</button>
+            <button onclick="showChart(1)">柱形图</button>
+            <button onclick="showChart(2)">条形图</button>
+            <button onclick="showChart(3)">面积图</button>
+            <button onclick="showChart(4)">饼图</button>
+            <button onclick="showChart(5)">散点图</button>
+            <button onclick="showChart(6)">直方图</button>
+            <button onclick="showChart(7)">箱形图</button>
+            <button onclick="showChart(8)">雷达图</button>
+            <button onclick="showChart(9)">误差棒图</button>
+        </div>
+
+        <!-- 折线图 -->
+        <div class="chart-section" id="chart0">
+            <h2 class="chart-title">1. 折线图 - 未来15天最高气温和最低气温</h2>
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示未来15天的最高气温和最低气温变化趋势。折线图适合展示时间序列数据的连续变化。</p>
+            </div>
+        </div>
+
+        <!-- 柱形图 -->
+        <div class="chart-section" id="chart1">
+            <h2 class="chart-title">2. 柱形图 - 2013-2019财年阿里巴巴GMV</h2>
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示阿里巴巴淘宝和天猫平台2013-2019财年的GMV（商品交易总额）数据。柱形图适合比较不同类别的数值大小。</p>
+            </div>
+        </div>
+
+        <!-- 条形图 -->
+        <div class="chart-section" id="chart2">
+            <h2 class="chart-title">3. 条形图 - 各商品种类的网购替代率</h2>
+            <div class="chart-container">
+                <canvas id="horizontalBarChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示不同商品种类的网购替代率，条形图适合展示类别名称较长的情况。</p>
+            </div>
+        </div>
+
+        <!-- 面积图 -->
+        <div class="chart-section" id="chart3">
+            <h2 class="chart-title">4. 面积图 - 物流公司物流费用统计</h2>
+            <div class="chart-container">
+                <canvas id="areaChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示三家物流公司全年各月的物流费用堆积情况，面积图适合展示部分与整体的关系。</p>
+            </div>
+        </div>
+
+        <!-- 饼图 -->
+        <div class="chart-section" id="chart4">
+            <h2 class="chart-title">5. 饼图 - 支付宝月账单报告</h2>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示支付宝月账单中各类消费的占比情况，饼图适合展示各部分在整体中的比例关系。</p>
+            </div>
+        </div>
+
+        <!-- 散点图 -->
+        <div class="chart-section" id="chart5">
+            <h2 class="chart-title">6. 散点图 - 汽车速度与制动距离的关系</h2>
+            <div class="chart-container">
+                <canvas id="scatterChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示汽车速度与制动距离之间的相关性，散点图适合展示两个变量之间的关系。</p>
+            </div>
+        </div>
+
+        <!-- 直方图 -->
+        <div class="chart-section" id="chart6">
+            <h2 class="chart-title">7. 直方图 - 人脸识别的灰度直方图</h2>
+            <div class="chart-container">
+                <canvas id="histogramChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示10000个随机数的分布情况，直方图适合展示数据的分布特征和频率。</p>
+            </div>
+        </div>
+
+        <!-- 箱形图 -->
+        <div class="chart-section" id="chart7">
+            <h2 class="chart-title">8. 箱形图 - 2017年和2018年全国发电量统计</h2>
+            <div class="chart-container">
+                <canvas id="boxPlot"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示2017年和2018年全国发电量的分布情况，箱形图适合展示数据的离散程度和异常值。</p>
+            </div>
+        </div>
+
+        <!-- 雷达图 -->
+        <div class="chart-section" id="chart8">
+            <h2 class="chart-title">9. 雷达图 - 霍兰德职业兴趣测试</h2>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示霍兰德职业兴趣测试的六个维度得分，雷达图适合展示多维数据的相对关系。</p>
+            </div>
+        </div>
+
+        <!-- 误差棒图 -->
+        <div class="chart-section" id="chart9">
+            <h2 class="chart-title">10. 误差棒图 - 4个树种不同季节的细根生物量</h2>
+            <div class="chart-container">
+                <canvas id="errorbarChart"></canvas>
+            </div>
+            <div class="chart-description">
+                <h3>图表说明</h3>
+                <p>展示四个树种在不同季节的细根生物量及其测量误差，误差棒图适合展示数据的波动范围。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        let charts = [];
+        let currentChart = 0;
+
+        // 显示指定图表
+        function showChart(index) {
+            // 隐藏所有图表
+            for (let i = 0; i < 10; i++) {
+                document.getElementById('chart' + i).style.display = 'none';
+                document.querySelectorAll('.controls button')[i].classList.remove('active');
+            }
+            
+            // 显示选中的图表
+            document.getElementById('chart' + index).style.display = 'block';
+            document.querySelectorAll('.controls button')[index].classList.add('active');
+            currentChart = index;
+        }
+
+        // 初始化页面时显示第一个图表
+        window.onload = function() {
+            showChart(0);
+            initializeCharts();
+        };
+
+        // 初始化所有图表
+        function initializeCharts() {
+            // 1. 折线图
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            charts[0] = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['第1天', '第2天', '第3天', '第4天', '第5天', '第6天', '第7天', '第8天', '第9天', '第10天', '第11天', '第12天', '第13天', '第14天', '第15天'],
+                    datasets: [{
+                        label: '最高气温',
+                        data: [32, 33, 34, 34, 33, 31, 30, 29, 30, 29, 26, 23, 21, 25, 31],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: '最低气温',
+                        data: [19, 19, 20, 22, 22, 21, 22, 16, 18, 18, 17, 14, 15, 16, 16],
+                        borderColor: '#4ecdc4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '未来15天气温变化'
+                        }
+                    }
+                }
+            });
+
+            // 2. 柱形图
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            charts[1] = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['2013', '2014', '2015', '2016', '2017', '2018', '2019'],
+                    datasets: [{
+                        label: 'GMV (亿元)',
+                        data: [10770, 16780, 24440, 30920, 37670, 48200, 57270],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '阿里巴巴GMV增长趋势'
+                        }
+                    }
+                }
+            });
+
+            // 3. 条形图
+            const horizontalBarCtx = document.getElementById('horizontalBarChart').getContext('2d');
+            charts[2] = new Chart(horizontalBarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['家政服务', '机票火车票', '家具', '手机配件', '计算机', '汽车用品'],
+                    datasets: [{
+                        label: '替代率',
+                        data: [0.959, 0.951, 0.935, 0.924, 0.893, 0.892],
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '商品网购替代率'
+                        }
+                    }
+                }
+            });
+
+            // 4. 面积图
+            const areaCtx = document.getElementById('areaChart').getContext('2d');
+            charts[3] = new Chart(areaCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    datasets: [{
+                        label: '公司A',
+                        data: [198, 215, 245, 222, 200, 236, 201, 253, 236, 200, 266, 290],
+                        backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        fill: true
+                    }, {
+                        label: '公司B',
+                        data: [203, 236, 200, 236, 269, 216, 298, 333, 301, 349, 360, 368],
+                        backgroundColor: 'rgba(255, 107, 107, 0.5)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        fill: true
+                    }, {
+                        label: '公司C',
+                        data: [185, 205, 226, 199, 238, 200, 250, 209, 246, 219, 253, 288],
+                        backgroundColor: 'rgba(78, 205, 196, 0.5)',
+                        borderColor: 'rgba(78, 205, 196, 1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '物流费用月度统计'
+                        }
+                    }
+                }
+            });
+
+            // 5. 饼图
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            charts[4] = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'],
+                    datasets: [{
+                        data: [26.7, 3.3, 33.3, 6.7, 10.0, 6.7, 6.7, 6.7],
+                        backgroundColor: [
+                            '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', 
+                            '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '支付宝月账单消费占比'
+                        }
+                    }
+                }
+            });
+
+            // 6. 散点图
+            const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+            charts[5] = new Chart(scatterCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '速度 vs 制动距离',
+                        data: [
+                            {x: 10, y: 0.5}, {x: 20, y: 2.0}, {x: 30, y: 4.4}, {x: 40, y: 7.9},
+                            {x: 50, y: 12.3}, {x: 60, y: 17.7}, {x: 70, y: 24.1}, {x: 80, y: 31.5},
+                            {x: 90, y: 39.9}, {x: 100, y: 49.2}, {x: 110, y: 59.5}, {x: 120, y: 70.8},
+                            {x: 130, y: 83.1}, {x: 140, y: 96.4}, {x: 150, y: 110.7}, {x: 160, y: 126.0},
+                            {x: 170, y: 142.2}, {x: 180, y: 159.4}, {x: 190, y: 177.6}, {x: 200, y: 196.8}
+                        ],
+                        backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '汽车速度与制动距离关系'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '速度 (km/h)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '制动距离 (m)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 7. 直方图
+            const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+            // 生成随机数据
+            const randomData = Array.from({length: 10000}, () => Math.random() * 100);
+            charts[6] = new Chart(histogramCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '90-100'],
+                    datasets: [{
+                        label: '频率',
+                        data: [980, 1020, 990, 1010, 1005, 995, 1008, 992, 1001, 1003],
+                        backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '随机数分布直方图'
+                        }
+                    }
+                }
+            });
+
+            // 8. 箱形图（使用分组柱形图模拟）
+            const boxPlotCtx = document.getElementById('boxPlot').getContext('2d');
+            charts[7] = new Chart(boxPlotCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['2018年', '2017年'],
+                    datasets: [{
+                        label: '最小值',
+                        data: [5107.8, 4605.2],
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)'
+                    }, {
+                        label: '下四分位数',
+                        data: [5283.4, 4947.0],
+                        backgroundColor: 'rgba(255, 107, 107, 0.6)'
+                    }, {
+                        label: '中位数',
+                        data: [5443.3, 5203.0],
+                        backgroundColor: 'rgba(78, 205, 196, 0.6)'
+                    }, {
+                        label: '上四分位数',
+                        data: [5550.6, 5698.6],
+                        backgroundColor: 'rgba(255, 193, 7, 0.6)'
+                    }, {
+                        label: '最大值',
+                        data: [6404.9, 6047.4],
+                        backgroundColor: 'rgba(156, 39, 176, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '发电量统计箱形图'
+                        }
+                    }
+                }
+            });
+
+            // 9. 雷达图
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            charts[8] = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['研究型(I)', '艺术型(A)', '社会型(S)', '企业型(E)', '传统型(C)', '现实型(R)'],
+                    datasets: [{
+                        label: '测试者A',
+                        data: [0.40, 0.32, 0.35, 0.30, 0.30, 0.88],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)'
+                    }, {
+                        label: '测试者B',
+                        data: [0.85, 0.35, 0.30, 0.40, 0.40, 0.30],
+                        backgroundColor: 'rgba(255, 107, 107, 0.2)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        pointBackgroundColor: 'rgba(255, 107, 107, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '霍兰德职业兴趣测试'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1
+                        }
+                    }
+                }
+            });
+
+            // 10. 误差棒图
+            const errorbarCtx = document.getElementById('errorbarChart').getContext('2d');
+            charts[9] = new Chart(errorbarCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['春季', '夏季', '秋季'],
+                    datasets: [{
+                        label: '树种A',
+                        data: [2.04, 1.57, 1.63],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '树种B',
+                        data: [1.69, 1.61, 1.64],
+                        backgroundColor: 'rgba(255, 107, 107, 0.8)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '树种C',
+                        data: [4.65, 4.99, 4.94],
+                        backgroundColor: 'rgba(78, 205, 196, 0.8)',
+                        borderColor: 'rgba(78, 205, 196, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '树种D',
+                        data: [3.39, 2.33, 4.10],
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '细根生物量季节变化'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
