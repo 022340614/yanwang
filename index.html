@@ -6,7 +6,24 @@
     <title>022340614 - 数据可视化交互平台</title>
     <meta name="description" content="022340614的数据可视化平台 - 基于Matplotlib的10种数据可视化图表展示">
     <meta name="keywords" content="022340614, 数据可视化, Matplotlib, 图表, 数据分析">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 网站加固优化 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://022340614.xyz/">
+    
+    <!-- DNS预解析 -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <!-- 备用CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        // Chart.js备用加载
+        if (typeof Chart === 'undefined') {
+            document.write('<script src="https://unpkg.com/chart.js"><\/script>');
+        }
+    </script>
     <style>
         * {
             margin: 0;
@@ -280,7 +297,7 @@
         <div class="header">
             <h1>📊 022340614 - 数据可视化交互平台</h1>
             <p>基于第二章Matplotlib案例的10种图形可视化</p>
-            <p>学号: <strong>022340614</strong></p>
+            <p>学号: <strong>022340614</strong> | 本地访问: <strong>http://localhost:8000</strong></p>
         </div>
         
         <div class="controls">
@@ -422,63 +439,112 @@
     </div>
 
     <script>
-        // 误差棒图插件
+        // 网站稳定性增强
+        window.addEventListener('error', function(e) {
+            console.warn('捕获到错误:', e.error);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.warn('未处理的Promise拒绝:', e.reason);
+        });
+
+        // 图表加载状态监控
+        let chartLoadAttempts = 0;
+        const maxChartLoadAttempts = 3;
+
+        // 误差棒图插件（带错误处理）
         const errorBarPlugin = {
             id: 'errorBars',
             afterDatasetsDraw(chart, args, options) {
-                const {ctx, data, scales} = chart;
-                
-                ctx.save();
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                
-                data.datasets.forEach((dataset, datasetIndex) => {
-                    const meta = chart.getDatasetMeta(datasetIndex);
-                    const yScale = scales.y;
+                try {
+                    const {ctx, data, scales} = chart;
                     
-                    dataset.data.forEach((value, index) => {
-                        const bar = meta.data[index];
-                        if (!bar) return;
+                    ctx.save();
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    
+                    data.datasets.forEach((dataset, datasetIndex) => {
+                        const meta = chart.getDatasetMeta(datasetIndex);
+                        const yScale = scales.y;
                         
-                        const x = bar.x;
-                        const barWidth = bar.width;
-                        
-                        // 为不同树种设置不同的误差值
-                        const errorValues = {
-                            0: {plus: 0.3, minus: 0.2}, // 树种A
-                            1: {plus: 0.25, minus: 0.15}, // 树种B
-                            2: {plus: 0.4, minus: 0.3}, // 树种C
-                            3: {plus: 0.35, minus: 0.25} // 树种D
-                        };
-                        
-                        const errors = errorValues[datasetIndex] || {plus: 0.3, minus: 0.2};
-                        
-                        // 上误差线
-                        ctx.beginPath();
-                        ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value - errors.minus));
-                        ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value - errors.minus));
-                        ctx.stroke();
-                        
-                        // 下误差线
-                        ctx.beginPath();
-                        ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value + errors.plus));
-                        ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value + errors.plus));
-                        ctx.stroke();
-                        
-                        // 垂直线
-                        ctx.beginPath();
-                        ctx.moveTo(x, yScale.getPixelForValue(value - errors.minus));
-                        ctx.lineTo(x, yScale.getPixelForValue(value + errors.plus));
-                        ctx.stroke();
+                        dataset.data.forEach((value, index) => {
+                            const bar = meta.data[index];
+                            if (!bar) return;
+                            
+                            const x = bar.x;
+                            const barWidth = bar.width;
+                            
+                            // 为不同树种设置不同的误差值
+                            const errorValues = {
+                                0: {plus: 0.3, minus: 0.2}, // 树种A
+                                1: {plus: 0.25, minus: 0.15}, // 树种B
+                                2: {plus: 0.4, minus: 0.3}, // 树种C
+                                3: {plus: 0.35, minus: 0.25} // 树种D
+                            };
+                            
+                            const errors = errorValues[datasetIndex] || {plus: 0.3, minus: 0.2};
+                            
+                            // 上误差线
+                            ctx.beginPath();
+                            ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value - errors.minus));
+                            ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value - errors.minus));
+                            ctx.stroke();
+                            
+                            // 下误差线
+                            ctx.beginPath();
+                            ctx.moveTo(x - barWidth/4, yScale.getPixelForValue(value + errors.plus));
+                            ctx.lineTo(x + barWidth/4, yScale.getPixelForValue(value + errors.plus));
+                            ctx.stroke();
+                            
+                            // 垂直线
+                            ctx.beginPath();
+                            ctx.moveTo(x, yScale.getPixelForValue(value - errors.minus));
+                            ctx.lineTo(x, yScale.getPixelForValue(value + errors.plus));
+                            ctx.stroke();
+                        });
                     });
-                });
-                
-                ctx.restore();
+                    
+                    ctx.restore();
+                } catch (error) {
+                    console.warn('误差棒插件执行出错:', error);
+                }
             }
         };
 
-        // 注册插件
-        Chart.register(errorBarPlugin);
+        // 安全注册插件
+        function safeRegisterPlugin() {
+            try {
+                if (typeof Chart !== 'undefined') {
+                    Chart.register(errorBarPlugin);
+                }
+            } catch (error) {
+                console.warn('插件注册失败:', error);
+            }
+        }
+
+        // 带重试机制的图表初始化
+        function initChartsWithRetry() {
+            try {
+                initCharts();
+            } catch (error) {
+                console.warn('图表初始化失败，尝试重试:', error);
+                chartLoadAttempts++;
+                if (chartLoadAttempts < maxChartLoadAttempts) {
+                    setTimeout(initChartsWithRetry, 1000);
+                } else {
+                    console.error('图表初始化多次失败，显示备用内容');
+                    showFallbackContent();
+                }
+            }
+        }
+
+        // 备用内容显示
+        function showFallbackContent() {
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                container.innerHTML = '<div style="text-align: center; padding: 50px; color: #666;">图表加载失败，请刷新页面重试</div>';
+            });
+        }
 
         // 初始化所有图表
         function initCharts() {
@@ -841,12 +907,69 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            initCharts();
+            // 安全初始化
+            safeRegisterPlugin();
+            initChartsWithRetry();
+            
             // 默认显示所有图表
             document.querySelectorAll('.chart-card').forEach(card => {
                 card.style.display = 'block';
             });
+
+            // 添加离线检测
+            window.addEventListener('online', function() {
+                console.log('网络已恢复');
+                document.body.classList.remove('offline');
+            });
+            
+            window.addEventListener('offline', function() {
+                console.log('网络已断开');
+                document.body.classList.add('offline');
+            });
+
+            // 添加服务工作者注册（如果支持）
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            }
         });
+
+        // 添加离线样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .offline::before {
+                content: '⚠️ 当前处于离线状态';
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: #ff6b6b;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 1000;
+                font-size: 14px;
+            }
+            
+            .chart-container {
+                position: relative;
+            }
+            
+            .chart-container::after {
+                content: '加载中...';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #666;
+                display: none;
+            }
+            
+            .chart-container.loading::after {
+                display: block;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

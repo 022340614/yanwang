@@ -1,0 +1,8 @@
+# 网站爬虫规则
+User-agent: *
+Allow: /
+Disallow: /charts/
+Disallow: /素材/
+
+# 网站地图
+Sitemap: https://022340614.xyz/sitemap.xml
