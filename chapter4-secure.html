@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="第四章数据可视化 - 稳定安全的022340614数据展示平台">
+    <meta name="keywords" content="数据可视化,图表,022340614,第四章,Matplotlib">
+    <meta name="author" content="022340614">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://022340614.xyz/chapter4-complete.html">
+    
+    <title>第四章完整数据可视化 - 022340614</title>
+    
+    <!-- Chart.js CDN with fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // CDN fallback
+        if (typeof Chart === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"><\/script>');
+        }
+    </script>
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: clamp(2em, 5vw, 3em);
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header .domain {
+            font-size: clamp(1.5em, 4vw, 2.2em);
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: clamp(1em, 3vw, 1.3em);
+            line-height: 1.6;
+        }
+        
+        .chapter-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 600px), 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .section-card h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-left: 5px solid #3498db;
+            padding-left: 20px;
+            text-align: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .chart-container canvas {
+            display: block;
+            max-width: 100%;
+        }
+        
+        .snowflake-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .snowflake-controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .snowflake-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        
+        .snowflake-controls button:hover {
+            background: #2980b9;
+        }
+        
+        .snowflake-controls button:active {
+            transform: scale(0.98);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .description h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .description p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #ecf0f1;
+            font-size: 0.9em;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Print styles */
+        @media print {
+            .snowflake-controls, .footer {
+                display: none;
+            }
+            .section-card {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+        }
+        
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .section-card {
+                background: white;
+                border: 2px solid black;
+            }
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .section-card {
+                padding: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .snowflake-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .snowflake-controls button {
+                width: 200px;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .section-card h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading indicator -->
+    <div id="loading" class="loading">
+        <p>正在加载数据可视化图表...</p>
+    </div>
+    
+    <!-- Error message container -->
+    <div id="errorMessage" class="error-message"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>第四章数据可视化展示</h1>
+            <div class="domain">www.022340614.xyz/chapter4-complete.html</div>
+            <p>稳定安全的数据可视化平台 - 基于Matplotlib图表样式与颜色配置</p>
+        </div>
+        
+        <div class="chapter-sections">
+            <div class="section-card">
+                <h2>数据图表可视化</h2>
+                
+                <div class="chart-container">
+                    <canvas id="bookPurchaseChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="exchangeRateChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="section-card">
+                <h2>彩色雪花可视化</h2>
+                <div class="snowflake-container">
+                    <canvas id="snowflakeCanvas" width="500" height="400"></canvas>
+                </div>
+                <div class="snowflake-controls">
+                    <button onclick="changeOrder(1)">1阶雪花</button>
+                    <button onclick="changeOrder(2)">2阶雪花</button>
+                    <button onclick="changeOrder(3)">3阶雪花</button>
+                    <button onclick="changeColor()">随机颜色</button>
+                    <button onclick="resetSnowflake()">重置</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="description">
+            <h3>第四章内容概述</h3>
+            <p>本章主要介绍了Matplotlib图表样式配置的相关知识，包括：</p>
+            <p>• <strong>图表样式概述</strong> - 默认样式配置和自定义修改</p>
+            <p>• <strong>颜色使用</strong> - 基础颜色名称、十六进制值和颜色映射表</p>
+            <p>• <strong>线型选择</strong> - 不同线条样式和宽度的应用</p>
+            <p>• <strong>数据标记</strong> - 折线图和散点图的数据点标记</p>
+            <p>• <strong>字体设置</strong> - 中文字体支持和样式配置</p>
+            <p>• <strong>主题风格</strong> - 多种预定义主题风格的切换</p>
+            <p>• <strong>区域填充</strong> - 多边形和曲线之间的区域填充技术</p>
+            <p>本页面经过安全加固，确保稳定可靠的访问体验。</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>数据可视化网站 - 域名包含：022340614 | 稳定安全版本 | 基于第四章内容制作</p>
+        <p>最后更新: 2025-01-10 | 版本: 2.0.0</p>
+    </div>
+
+    <script>
+        // 安全加固的JavaScript代码
+        'use strict';
+        
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            showError('页面加载出现错误，请刷新页面重试');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise拒绝:', e.reason);
+            showError('应用程序出现错误');
+        });
+        
+        // 显示错误信息
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // 5秒后自动隐藏错误信息
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 显示加载指示器
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        
+        // 隐藏加载指示器
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // 安全检查函数
+        function safeGetElementById(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                throw new Error(`元素 ${id} 未找到`);
+            }
+            return element;
+        }
+        
+        // 图表初始化函数
+        function initializeCharts() {
+            try {
+                showLoading();
+                
+                // 安全检查Chart.js
+                if (typeof Chart === 'undefined') {
+                    throw new Error('Chart.js库加载失败');
+                }
+                
+                // 图书采购情况图表
+                const bookPurchaseCtx = safeGetElementById('bookPurchaseChart').getContext('2d');
+                new Chart(bookPurchaseCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['家庭', '小说', '心理', '科技', '儿童'],
+                        datasets: [
+                            {
+                                label: '地区1',
+                                data: [1200, 2400, 1800, 2200, 1600],
+                                backgroundColor: '#FFCC00',
+                                borderColor: '#FFCC00',
+                                borderWidth: 1
+                            },
+                            {
+                                label: '地区2',
+                                data: [1050, 2100, 1300, 1600, 1340],
+                                backgroundColor: '#B0C4DE',
+                                borderColor: '#B0C4DE',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: '采购数量(本)' },
+                                grid: { color: 'rgba(0,0,0,0.1)' }
+                            },
+                            x: {
+                                title: { display: true, text: '图书种类' },
+                                grid: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: '地区1和地区2对各类图书的采购情况' }
+                        }
+                    }
+                });
+
+                // 汇率走势图表
+                const exchangeRateCtx = safeGetElementById('exchangeRateChart').getContext('2d');
+                const dates = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 24, 25, 26, 31];
+                new Chart(exchangeRateCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dates.map(d => `7月${d}日`),
+                        datasets: [
+                            {
+                                label: '2017年7月美元/人民币汇率',
+                                data: [6.8007, 6.8007, 6.8015, 6.8015, 6.8060, 6.8060, 6.8060, 6.8036, 6.8025, 6.7877, 6.7835, 6.7758, 6.7700, 6.7463, 6.7519, 6.7511, 6.7511, 6.7539, 6.7265],
+                                borderColor: '#006374',
+                                backgroundColor: 'rgba(0, 99, 116, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: true
+                            },
+                            {
+                                label: '2019年7月美元/人民币汇率',
+                                data: [6.8640, 6.8705, 6.8697, 6.8697, 6.8697, 6.8881, 6.8853, 6.8856, 6.8677, 6.8662, 6.8662, 6.8662, 6.8827, 6.8761, 6.8635, 6.8860, 6.8737, 6.8796, 6.8841],
+                                borderColor: '#8a2e76',
+                                backgroundColor: 'rgba(138, 46, 118, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.1,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { title: { display: true, text: '汇率' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+                            x: { title: { display: true, text: '日期' }, grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: '2017年7月与2019年7月美元/人民币汇率走势' }
+                        }
+                    }
+                });
+
+                // 产品销售额图表
+                const salesCtx = safeGetElementById('salesChart').getContext('2d');
+                new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['第1季度', '第2季度', '第3季度', '第4季度'],
+                        datasets: [
+                            {
+                                label: '产品A',
+                                data: [2144, 4617, 7674, 6666],
+                                borderColor: '#FF6B6B',
+                                backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                                borderWidth: 2,
+                                pointStyle: 'diamond',
+                                pointRadius: 6,
+                                tension: 0.1
+                            },
+                            {
+                                label: '产品B',
+                                data: [853, 1214, 2414, 4409],
+                                borderColor: '#4ECDC4',
+                                backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [2, 2],
+                                pointStyle: 'triangle',
+                                pointRadius: 6,
+                                tension: 0.1
+                            },
+                            {
+                                label: '产品C',
+                                data: [153, 155, 292, 680],
+                                borderColor: '#45B7D1',
+                                backgroundColor: 'rgba(69, 183, 209, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointStyle: 'rect',
+                                pointRadius: 6,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: '销售额(万元)' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+                            x: { grid: { display: false } }
+                        },
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+
+                // 气温走势图表
+                const temperatureCtx = safeGetElementById('temperatureChart').getContext('2d');
+                const days = Array.from({length: 15}, (_, i) => `第${i+1}天`);
+                new Chart(temperatureCtx, {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [
+                            {
+                                label: '最高温度',
+                                data: [32, 33, 34, 34, 33, 31, 30, 29, 30, 29, 26, 23, 21, 25, 31],
+                                borderColor: '#E74C3C',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#E74C3C',
+                                pointBorderColor: '#fff',
+                                pointRadius: 6,
+                                tension: 0.3
+                            },
+                            {
+                                label: '最低温度',
+                                data: [19, 19, 20, 22, 22, 21, 22, 16, 18, 18, 17, 14, 15, 16, 16],
+                                borderColor: '#3498DB',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#3498DB',
+                                pointBorderColor: '#fff',
+                                pointRadius: 6,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { title: { display: true, text: '温度(°C)' }, min: 0, max: 40, grid: { color: 'rgba(0,0,0,0.1)' } },
+                            x: { title: { display: true, text: '日期' }, grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: '未来15天最高气温和最低气温的走势' }
+                        }
+                    }
+                });
+                
+                hideLoading();
+                
+            } catch (error) {
+                console.error('图表初始化错误:', error);
+                showError('图表加载失败: ' + error.message);
+                hideLoading();
+            }
+        }
+
+        // 雪花可视化相关变量
+        let currentOrder = 2;
+        let currentFaceColor = '#FFA07A';
+        let currentEdgeColor = '#FF4500';
+        let snowflakeCanvas, snowflakeCtx;
+
+        // 安全的雪花初始化
+        function initializeSnowflake() {
+            try {
+                snowflakeCanvas = safeGetElementById('snowflakeCanvas');
+                snowflakeCtx = snowflakeCanvas.getContext('2d');
+                drawSnowflake();
+            } catch (error) {
+                console.error('雪花初始化错误:', error);
+                showError('雪花可视化加载失败');
+            }
+        }
+
+        // 科赫雪花算法
+        function kochSnowflake(order) {
+            if (order === 0) {
+                return [{x: 0, y: -150}, {x: 130, y: 75}, {x: -130, y: 75}];
+            }
+            
+            const points = kochSnowflake(order - 1);
+            const newPoints = [];
+            
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                const p2 = points[(i + 1) % points.length];
+                
+                newPoints.push(p1);
+                
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                
+                newPoints.push({
+                    x: p1.x + dx / 3,
+                    y: p1.y + dy / 3
+                });
+                
+                const angle = Math.PI / 3;
+                newPoints.push({
+                    x: p1.x + dx / 2 - dy * Math.sin(angle) / 3,
+                    y: p1.y + dy / 2 + dx * Math.sin(angle) / 3
+                });
+                
+                newPoints.push({
+                    x: p1.x + 2 * dx / 3,
+                    y: p1.y + 2 * dy / 3
+                });
+            }
+            
+            return newPoints;
+        }
+
+        // 绘制雪花
+        function drawSnowflake() {
+            if (!snowflakeCtx) return;
+            
+            try {
+                snowflakeCtx.clearRect(0, 0, snowflakeCanvas.width, snowflakeCanvas.height);
+                
+                snowflakeCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                snowflakeCtx.fillRect(0, 0, snowflakeCanvas.width, snowflakeCanvas.height);
+                
+                snowflakeCtx.save();
+                snowflakeCtx.translate(snowflakeCanvas.width / 2, snowflakeCanvas.height / 2);
+                
+                const points = kochSnowflake(currentOrder);
+                
+                snowflakeCtx.beginPath();
+                snowflakeCtx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    snowflakeCtx.lineTo(points[i].x, points[i].y);
+                }
+                snowflakeCtx.closePath();
+                
+                snowflakeCtx.fillStyle = currentFaceColor;
+                snowflakeCtx.fill();
+                
+                snowflakeCtx.strokeStyle = currentEdgeColor;
+                snowflakeCtx.lineWidth = 3;
+                snowflakeCtx.stroke();
+                
+                snowflakeCtx.fillStyle = '#2c3e50';
+                snowflakeCtx.font = '16px Microsoft YaHei';
+                snowflakeCtx.textAlign = 'center';
+                snowflakeCtx.fillText(`科赫雪花 - ${currentOrder}阶`, 0, -snowflakeCanvas.height/2 + 40);
+                
+                snowflakeCtx.restore();
+            } catch (error) {
+                console.error('绘制雪花错误:', error);
+            }
+        }
+
+        // 雪花控制函数
+        function changeOrder(order) {
+            currentOrder = Math.max(0, Math.min(5, order)); // 限制阶数范围
+            drawSnowflake();
+        }
+
+        function changeColor() {
+            const colors = [
+                {face: '#FFA07A', edge: '#FF4500'},
+                {face: '#98FB98', edge: '#32CD32'},
+                {face: '#87CEEB', edge: '#1E90FF'},
+                {face: '#DDA0DD', edge: '#8A2BE2'},
+                {face: '#FFD700', edge: '#FF8C00'},
+                {face: '#F0E68C', edge: '#DAA520'}
+            ];
+            
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            currentFaceColor = randomColor.face;
+            currentEdgeColor = randomColor.edge;
+            drawSnowflake();
+        }
+
+        function resetSnowflake() {
+            currentOrder = 2;
+            currentFaceColor = '#FFA07A';
+            currentEdgeColor = '#FF4500';
+            drawSnowflake();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            initializeSnowflake();
+        });
+
+        // 响应式调整
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (snowflakeCanvas) {
+                    snowflakeCanvas.width = Math.min(500, window.innerWidth - 60);
+                    snowflakeCanvas.height = 400;
+                    drawSnowflake();
+                }
+            }, 250); // 防抖处理
+        });
+
+        // 离线检测
+        window.addEventListener('online', function() {
+            showError('网络连接已恢复');
+        });
+
+        window.addEventListener('offline', function() {
+            showError('网络连接已断开，部分功能可能受限');
+        });
+
+        // 性能监控
+        if ('performance' in window) {
+            window.addEventListener('load', function() {
+                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                console.log(`页面加载时间: ${loadTime}ms`);
+            });
+        }
+    </script>
+</body>
+</html>
